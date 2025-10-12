@@ -3,6 +3,8 @@
 # BSD 3-Clause License
 
 import json
+import traceback
+import asyncio
 
 import requests
 
@@ -57,16 +59,50 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
     # Class variable to store registered tools across all connections
     registered_tools = []
     
+    # Event to signal when tools are registered
+    _tools_registered = asyncio.Event()
+    
+    # Track active WebSocket connections
+    active_connections = set()
+    
+    # Track pending tool executions (execution_id -> {event, result})
+    pending_executions = {}
+    
+    @classmethod
+    async def wait_for_tools(cls, timeout=30):
+        """
+        Wait for tools to be registered.
+        
+        Args:
+            timeout: Maximum time to wait in seconds
+            
+        Returns:
+            True if tools were registered, False if timeout
+        """
+        try:
+            await asyncio.wait_for(cls._tools_registered.wait(), timeout=timeout)
+            return True
+        except asyncio.TimeoutError:
+            return False
+    
+    @classmethod
+    def are_tools_registered(cls):
+        """Check if tools have been registered."""
+        return cls._tools_registered.is_set()
+    
     def open(self):
-        print("WebSocket opened.")
         self.log.info("MCP Tools WebSocket connection opened")
+        # Add this connection to active connections
+        WsEchoHandler.active_connections.add(self)
 
     def on_message(self, message):
         """Handle incoming WebSocket messages"""
         try:
-            print(f"WebSocket message received: {message}")
             data = json.loads(message)
             message_type = data.get('type', '')
+            
+            # Log only the message type, not the full content
+            self.log.debug(f"WebSocket message type: {message_type}")
             
             if message_type == 'register_tools':
                 self.handle_register_tools(data)
@@ -92,8 +128,8 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
         """Handle registration of tools from the frontend"""
         tools = data.get('tools', [])
         WsEchoHandler.registered_tools = tools
+        WsEchoHandler._tools_registered.set()  # Signal that tools are registered
         self.log.info(f"Registered {len(tools)} tools")
-        print(f"Registered {len(tools)} tools")
         
         # Send acknowledgment
         response = {
@@ -118,13 +154,15 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
         tool_id = data.get('tool_id', '')
         parameters = data.get('parameters', {})
         
-        self.log.info(f"Applying tool: {tool_id} with parameters: {parameters}")
-        print(f"Applying tool: {tool_id}")
+        self.log.info(f"Applying tool: {tool_id}")
         
-        # Find the tool in registered tools
+        # Transform tool_id: replace underscores with colons to match original command IDs
+        original_tool_id = tool_id.replace('_', ':')
+        
+        # Find the tool in registered tools using the original ID
         tool = None
         for t in WsEchoHandler.registered_tools:
-            if t.get('id') == tool_id:
+            if t.get('id') == original_tool_id:
                 tool = t
                 break
         
@@ -132,11 +170,10 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
             self.send_error_response(f"Tool not found: {tool_id}")
             return
         
-        # Relay the apply_tool message to the frontend
-        # The frontend will execute the command and send back a result
+        # Relay the apply_tool message to the frontend using original ID
         relay_message = {
             'type': 'apply_tool',
-            'tool_id': tool_id,
+            'tool_id': original_tool_id,
             'parameters': parameters
         }
         self.write_message(json.dumps(relay_message))
@@ -144,15 +181,45 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
     def handle_tool_result(self, data):
         """Handle tool execution results from the frontend"""
         tool_id = data.get('tool_id', '')
+        execution_id = data.get('execution_id', None)
         success = data.get('success', False)
         result = data.get('result', None)
         error = data.get('error', None)
+        
+        # Check if this is a response to an HTTP-initiated execution
+        if execution_id and execution_id in WsEchoHandler.pending_executions:
+            pending = WsEchoHandler.pending_executions[execution_id]
+            pending['result'] = {
+                'success': success,
+                'result': result if success else None,
+                'error': error if not success else None
+            }
+            pending['event'].set()
+            self.log.info(f"Received result for execution {execution_id}")
+            return
+        
+        # Fallback: if no execution_id, try to match by tool_id (for backwards compatibility)
+        # This handles the case where the frontend hasn't been rebuilt yet
+        if not execution_id and tool_id:
+            # Transform tool_id back to match what we're looking for
+            original_tool_id = tool_id.replace(' ', ':')
+            
+            # Find any pending execution for this tool_id
+            for exec_id, pending in list(WsEchoHandler.pending_executions.items()):
+                if original_tool_id in exec_id or tool_id in exec_id:
+                    pending['result'] = {
+                        'success': success,
+                        'result': result if success else None,
+                        'error': error if not success else None
+                    }
+                    pending['event'].set()
+                    self.log.info(f"Received result for tool {tool_id} (matched to {exec_id})")
+                    return
         
         if success:
             # Safely serialize the result for logging
             safe_result = safe_serialize(result, max_depth=2)
             self.log.info(f"Tool {tool_id} executed successfully")
-            print(f"Tool {tool_id} executed successfully")
             
             # Send sanitized result back to client
             response = {
@@ -167,7 +234,6 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
                 self.log.error(f"Error sending tool result acknowledgment: {e}")
         else:
             self.log.error(f"Tool {tool_id} failed: {error}")
-            print(f"Tool {tool_id} failed: {error}")
             
             # Send error acknowledgment
             response = {
@@ -187,7 +253,7 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
             r = requests.request('POST', 'http://localhost:8080', data=message)
             t = r.text
             j = json.loads(t)
-            print(j)
+            self.log.debug(f"External service response received")
             self.write_message(t)
         except Exception as e:
             self.log.error(f"Error forwarding to external service: {e}")
@@ -202,5 +268,6 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
         self.write_message(json.dumps(response))
 
     def on_close(self):
-        print("WebSocket closed")
         self.log.info("MCP Tools WebSocket connection closed")
+        # Remove this connection from active connections
+        WsEchoHandler.active_connections.discard(self)

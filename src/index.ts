@@ -162,9 +162,12 @@ class MCPToolsWebSocket {
         const caption = commands.caption(commandId);
         const usage = commands.usage(commandId);
 
+        // Replace colons with spaces in the command ID for MCP compatibility
+        const toolId = commandId.replace(/:/g, ' ');
+
         const tool: ITool = {
-          id: commandId,
-          label: label || commandId,
+          id: toolId,
+          label: label || toolId,
           caption: caption || '',
           usage: usage || '',
           isEnabled: isEnabled,
@@ -221,7 +224,11 @@ class MCPToolsWebSocket {
       this.widget.addMessage('received', message.type || 'unknown', message);
 
       if (message.type === 'apply_tool') {
-        this.applyToolFromServer(message.tool_id, message.parameters || {});
+        this.applyToolFromServer(
+          message.tool_id, 
+          message.parameters || {}, 
+          message.execution_id
+        );
       }
     } catch (error) {
       console.error('Error handling message:', error);
@@ -300,13 +307,18 @@ class MCPToolsWebSocket {
    */
   private async applyToolFromServer(
     toolId: string,
-    parameters: any
+    parameters: any,
+    executionId?: string
   ): Promise<void> {
     try {
       console.log(`Applying tool from server: ${toolId}`, parameters);
 
-      if (this.app.commands.hasCommand(toolId)) {
-        const result = await this.app.commands.execute(toolId, parameters);
+      // Convert space-separated tool ID back to colon-separated command ID
+      // This reverses the transformation done in registerTools()
+      const commandId = toolId.replace(/ /g, ':');
+
+      if (this.app.commands.hasCommand(commandId)) {
+        const result = await this.app.commands.execute(commandId, parameters);
         console.log(`Tool ${toolId} executed successfully`);
 
         // Sanitize result to avoid circular references
@@ -316,17 +328,19 @@ class MCPToolsWebSocket {
         const response = {
           type: 'tool_result',
           tool_id: toolId,
+          execution_id: executionId,
           success: true,
           result: sanitizedResult
         };
         this.sendMessage(response);
       } else {
-        console.error(`Command not found: ${toolId}`);
+        console.error(`Command not found: ${commandId}`);
         const response = {
           type: 'tool_result',
           tool_id: toolId,
+          execution_id: executionId,
           success: false,
-          error: `Command not found: ${toolId}`
+          error: `Command not found: ${commandId}`
         };
         this.sendMessage(response);
       }
@@ -335,6 +349,7 @@ class MCPToolsWebSocket {
       const response = {
         type: 'tool_result',
         tool_id: toolId,
+        execution_id: executionId,
         success: false,
         error: String(error)
       };

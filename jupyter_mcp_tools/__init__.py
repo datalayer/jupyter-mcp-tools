@@ -11,7 +11,16 @@ except ImportError:
     import warnings
     warnings.warn("Importing 'jupyter_mcp_tools' outside a proper installation.")
     __version__ = "dev"
+
 from .handlers import setup_handlers
+from .client import MCPToolsClient, get_tools
+
+__all__ = [
+    '__version__',
+    'setup_handlers',
+    'MCPToolsClient',
+    'get_tools'
+]
 
 
 def _jupyter_labextension_paths():
