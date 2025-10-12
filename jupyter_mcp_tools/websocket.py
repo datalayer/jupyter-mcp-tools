@@ -1,3 +1,7 @@
+# Copyright (c) 2023-2024 Datalayer, Inc.
+#
+# BSD 3-Clause License
+
 import json
 
 import requests
@@ -6,6 +10,38 @@ from tornado.websocket import WebSocketHandler
 
 from jupyter_server.base.handlers import JupyterHandler
 from jupyter_server.base.zmqhandlers import WebSocketMixin
+
+
+def safe_serialize(obj, max_depth=3, current_depth=0):
+    """
+    Safely serialize an object, handling circular references and complex types.
+    Returns a JSON-serializable representation.
+    """
+    if current_depth > max_depth:
+        return "<max depth reached>"
+    
+    if obj is None or isinstance(obj, (bool, int, float, str)):
+        return obj
+    
+    if isinstance(obj, (list, tuple)):
+        return [safe_serialize(item, max_depth, current_depth + 1) for item in obj[:100]]  # Limit to 100 items
+    
+    if isinstance(obj, dict):
+        result = {}
+        for key, value in list(obj.items())[:100]:  # Limit to 100 keys
+            try:
+                result[str(key)] = safe_serialize(value, max_depth, current_depth + 1)
+            except:
+                result[str(key)] = "<serialization error>"
+        return result
+    
+    # For objects, try to extract useful information
+    try:
+        if hasattr(obj, '__dict__'):
+            return f"<{type(obj).__name__} object>"
+        return str(obj)
+    except:
+        return f"<{type(obj).__name__}>"
 
 
 class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
@@ -113,11 +149,37 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
         error = data.get('error', None)
         
         if success:
+            # Safely serialize the result for logging
+            safe_result = safe_serialize(result, max_depth=2)
             self.log.info(f"Tool {tool_id} executed successfully")
-            print(f"Tool {tool_id} executed successfully: {result}")
+            print(f"Tool {tool_id} executed successfully")
+            
+            # Send sanitized result back to client
+            response = {
+                'type': 'tool_result_ack',
+                'tool_id': tool_id,
+                'success': True,
+                'result_summary': safe_result if isinstance(safe_result, str) else '<result>'
+            }
+            try:
+                self.write_message(json.dumps(response))
+            except Exception as e:
+                self.log.error(f"Error sending tool result acknowledgment: {e}")
         else:
             self.log.error(f"Tool {tool_id} failed: {error}")
             print(f"Tool {tool_id} failed: {error}")
+            
+            # Send error acknowledgment
+            response = {
+                'type': 'tool_result_ack',
+                'tool_id': tool_id,
+                'success': False,
+                'error': str(error)
+            }
+            try:
+                self.write_message(json.dumps(response))
+            except Exception as e:
+                self.log.error(f"Error sending error acknowledgment: {e}")
 
     def forward_to_external_service(self, message):
         """Legacy behavior: forward message to external HTTP service"""

@@ -1,5 +1,8 @@
-import json
+# Copyright (c) 2023-2024 Datalayer, Inc.
+#
+# BSD 3-Clause License
 
+import json
 
 async def test_get_example(jp_fetch):
     # When

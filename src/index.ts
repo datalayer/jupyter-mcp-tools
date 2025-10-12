@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2023-2025 Datalayer, Inc.
+ * Distributed under the terms of the Modified BSD License.
+ */
+
 import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
@@ -10,6 +15,59 @@ import { ILabShell } from '@jupyterlab/application';
 
 import { requestAPI } from './handler';
 import { MCPToolsWidget, ITool } from './components/MCPToolsWidget';
+
+/**
+ * Safely serialize a value for JSON transmission, handling circular references
+ */
+function safeSerialize(obj: any, maxDepth = 3, currentDepth = 0, seen = new WeakSet()): any {
+  // Handle primitives
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  
+  if (typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string') {
+    return obj;
+  }
+
+  // Prevent infinite recursion
+  if (currentDepth > maxDepth) {
+    return '<max depth reached>';
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.slice(0, 100).map(item => safeSerialize(item, maxDepth, currentDepth + 1, seen));
+  }
+
+  // Handle objects with circular reference detection
+  if (typeof obj === 'object') {
+    if (seen.has(obj)) {
+      return '<circular reference>';
+    }
+    
+    seen.add(obj);
+    
+    const result: any = {};
+    const keys = Object.keys(obj).slice(0, 100); // Limit to 100 keys
+    
+    for (const key of keys) {
+      try {
+        result[key] = safeSerialize(obj[key], maxDepth, currentDepth + 1, seen);
+      } catch (e) {
+        result[key] = '<serialization error>';
+      }
+    }
+    
+    return result;
+  }
+
+  // Fallback for functions and other types
+  try {
+    return String(obj);
+  } catch (e) {
+    return '<unserializable>';
+  }
+}
 
 /**
  * WebSocket connection manager for MCP tools
@@ -179,13 +237,16 @@ class MCPToolsWebSocket {
 
       if (this.app.commands.hasCommand(toolId)) {
         const result = await this.app.commands.execute(toolId, parameters);
-        console.log(`Tool ${toolId} executed successfully:`, result);
+        console.log(`Tool ${toolId} executed successfully`);
+
+        // Sanitize result to avoid circular references in message log
+        const sanitizedResult = safeSerialize(result, 2);
 
         // Add success message to log
         this.widget.addMessage('sent', 'local_execute', {
           tool_id: toolId,
           parameters,
-          result,
+          result: sanitizedResult,
           success: true
         });
       } else {
@@ -246,14 +307,17 @@ class MCPToolsWebSocket {
 
       if (this.app.commands.hasCommand(toolId)) {
         const result = await this.app.commands.execute(toolId, parameters);
-        console.log(`Tool ${toolId} executed successfully:`, result);
+        console.log(`Tool ${toolId} executed successfully`);
+
+        // Sanitize result to avoid circular references
+        const sanitizedResult = safeSerialize(result, 2);
 
         // Send success response back
         const response = {
           type: 'tool_result',
           tool_id: toolId,
           success: true,
-          result: result
+          result: sanitizedResult
         };
         this.sendMessage(response);
       } else {

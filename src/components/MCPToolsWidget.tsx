@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2023-2025 Datalayer, Inc.
+ * Distributed under the terms of the Modified BSD License.
+ */
+
+
 import { ReactWidget } from '@jupyterlab/apputils';
 import { LabIcon } from '@jupyterlab/ui-components';
 import React from 'react';

@@ -35,46 +35,7 @@ pip install jupyter_mcp_tools
 ## Use
 
 ```bash
-# Ensure Jupyter Server is starting without any extension enabled.
-jupyter server --ServerApp.allow_origin=*
-```
-
-```bash
-# Browse the default home page, it should show a white page in your browser with the following content: `A Jupyter Server is running.`
-open http://localhost:8888
-```
-
-```bash
-# Now you can render `ExtensionWS` Server content in your browser.
-open http://localhost:8888/simple_ws/default
-open http://localhost:8888/simple_ws/params/test?var1=foo
-open http://localhost:8888/simple_ws/template1/test
-open http://localhost:8888/simple_ws/typescript
-open http://localhost:8888/simple_ws/nope
-open http://localhost:8888/simple_ws/redirect
-open http://localhost:8888/static/simple_ws/favicon.ico
-#
-open http://localhost:8888/static/simple_ws/home_ws.html
-open http://localhost:8888/static/simple_ws/test_ws.html
-```
-
-Start a Jupyter Server with a Node.js HTTP Server and send from a client a message via WebSocket.
-
-```bash
-# WebSocket Client <-> Jupyter WebSocket Server <-> HTTP Node.js Server
-# open http://localhost:8080
-npm run server
-...
-WebSocket opened
-PRODUCER: Event for URL ws://localhost:8888/simple_ws/echo
-WebSocket message: Hello Jupyter Server
-URL /
-'Params'
-POST
-Partial body: Hello Jupyter Server
-Body: Hello Jupyter Server
-{'text': 'Hello Jupyter Server'}
-LISTENER: Got Message {"text":"Hello Jupyter Server"}
+make start
 ```
 
 ## Uninstall
