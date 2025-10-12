@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "@datalayer/jupyter-mcp-tools",
+  "description": "@datalayer/jupyter-mcp-tools settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
