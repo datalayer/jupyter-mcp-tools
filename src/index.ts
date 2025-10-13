@@ -122,8 +122,8 @@ class MCPToolsWebSocket {
       console.log('WebSocket connected');
       this.reconnectAttempts = 0;
       // Defer tool registration to next tick to ensure all command registrations are complete
-      requestAnimationFrame(() => {
-        this.registerTools();
+      requestAnimationFrame(async () => {
+        await this.registerTools();
       });
     };
 
@@ -159,7 +159,7 @@ class MCPToolsWebSocket {
   /**
    * Register all available JupyterLab commands as tools
    */
-  private registerTools(): void {
+  private async registerTools(): Promise<void> {
     const commands = this.app.commands;
     const allCommandIds = commands.listCommands();
     console.log(`Total JupyterLab commands available: ${allCommandIds.length}`);
@@ -167,13 +167,9 @@ class MCPToolsWebSocket {
     const tools: ITool[] = [];
 
     // Iterate through all registered commands
-    allCommandIds.forEach(commandId => {
+    for (const commandId of allCommandIds) {
       try {
-        // Check if command is enabled
-        // Note: For context-dependent commands (like notebook:append-execute),
-        // isEnabled may be false at registration time but true later.
-        // We set isEnabled to true by default to allow users to try executing.
-        // The actual execution will fail gracefully if the command is not available.
+        // Try to check if command is enabled (with fallback to true)
         let isEnabled = true;
         try {
           isEnabled = commands.isEnabled(commandId);
@@ -190,20 +186,22 @@ class MCPToolsWebSocket {
         // MCP tool names must match pattern: ^[a-zA-Z0-9_-]+$
         const toolId = commandId.replace(/:/g, '_');
 
+        // Get command parameters using describedBy introspection
+        const parameters = await this.getCommandParameters(commandId);
+
         const tool: ITool = {
           id: toolId,
           label: label || toolId,
           caption: caption || '',
           usage: usage || '',
           isEnabled: isEnabled,
-          // Get command schema if available
-          parameters: this.getCommandParameters(commandId)
+          parameters: parameters
         };
         tools.push(tool);
       } catch (error) {
         console.warn(`Error processing command ${commandId}:`, error);
       }
-    });
+    }
 
     console.log(`Successfully processed ${tools.length} tools`);
 
@@ -223,11 +221,11 @@ class MCPToolsWebSocket {
   /**
    * Extract command parameters if available
    */
-  private getCommandParameters(commandId: string): any {
+  private async getCommandParameters(commandId: string): Promise<any> {
     try {
-      // Define parameter schemas for known MCP Tools commands
-      if (commandId === 'notebook:append-execute') {
-        return {
+      // Define parameter schemas for known commands that require parameters
+      const knownSchemas: Record<string, any> = {
+        'notebook:append-execute': {
           type: 'object',
           properties: {
             source: {
@@ -243,18 +241,102 @@ class MCPToolsWebSocket {
           },
           required: ['source'],
           description: 'Append and execute a cell in the current notebook'
-        };
+        },
+        'filebrowser:open-path': {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'Path to open'
+            }
+          },
+          required: ['path'],
+          description: 'Open a file or directory by path'
+        },
+        'docmanager:open': {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'Path to the file to open'
+            },
+            factory: {
+              type: 'string',
+              description: 'Widget factory name (optional)'
+            },
+            kernel: {
+              type: 'object',
+              description: 'Kernel options (optional)'
+            }
+          },
+          required: ['path'],
+          description: 'Open a document'
+        },
+        'notebook:insert-cell-below': {
+          type: 'object',
+          properties: {
+            activate: {
+              type: 'boolean',
+              description: 'Whether to activate the new cell',
+              default: true
+            }
+          },
+          description: 'Insert a cell below the current cell'
+        },
+        'notebook:insert-cell-above': {
+          type: 'object',
+          properties: {
+            activate: {
+              type: 'boolean',
+              description: 'Whether to activate the new cell',
+              default: true
+            }
+          },
+          description: 'Insert a cell above the current cell'
+        },
+        'console:create': {
+          type: 'object',
+          properties: {
+            activate: {
+              type: 'boolean',
+              description: 'Whether to activate the console',
+              default: true
+            },
+            insertMode: {
+              type: 'string',
+              enum: ['split-right', 'split-left', 'split-top', 'split-bottom'],
+              description: 'Where to insert the console',
+              default: 'split-right'
+            },
+            path: {
+              type: 'string',
+              description: 'Path for the console session'
+            }
+          },
+          description: 'Create a new console'
+        }
+      };
+
+      // Check if we have a known schema
+      if (knownSchemas[commandId]) {
+        return knownSchemas[commandId];
       }
 
-      // Try to get the command's schema or args description
-      // Note: Not all commands have a schema, so we return a generic structure
+      // For commands not in our known list, return empty schema
+      // Note: Lumino's CommandRegistry doesn't expose parameter schemas,
+      // only the actual argument values passed to commands
       return {
         type: 'object',
         properties: {},
         description: 'Command arguments (if any)'
       };
     } catch (error) {
-      return {};
+      console.warn(`Error getting parameters for ${commandId}:`, error);
+      return {
+        type: 'object',
+        properties: {},
+        description: 'Command arguments (if any)'
+      };
     }
   }
 
