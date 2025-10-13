@@ -56,10 +56,45 @@ const ToolItem: React.FC<{
     tool.parameters.properties &&
     Object.keys(tool.parameters.properties).length > 0;
 
+  // Generate default parameters from schema
+  const generateDefaultParameters = () => {
+    if (!hasParameters) {
+      return '{}';
+    }
+
+    const properties = tool.parameters.properties;
+    const defaults: any = {};
+
+    for (const [key, prop] of Object.entries(properties)) {
+      const typedProp = prop as any;
+      if (typedProp.default !== undefined) {
+        defaults[key] = typedProp.default;
+      } else if (typedProp.type === 'string') {
+        defaults[key] = typedProp.description
+          ? `<${typedProp.description}>`
+          : '';
+      } else if (typedProp.type === 'number') {
+        defaults[key] = 0;
+      } else if (typedProp.type === 'boolean') {
+        defaults[key] = false;
+      } else if (typedProp.type === 'array') {
+        defaults[key] = [];
+      } else if (typedProp.type === 'object') {
+        defaults[key] = {};
+      } else {
+        defaults[key] = null;
+      }
+    }
+
+    return JSON.stringify(defaults, null, 2);
+  };
+
   const handleExecute = (mode: 'local' | 'remote') => {
     // If tool has parameters and form is not shown, show the form first
     if (hasParameters && !showForm) {
       setShowForm(true);
+      // Initialize with default parameter structure
+      setParameters(generateDefaultParameters());
       return;
     }
 
@@ -92,8 +127,11 @@ const ToolItem: React.FC<{
           <div className="mcp-tool-label" title={tool.caption}>
             {tool.label || tool.id}
             {hasParameters && (
-              <span className="mcp-tool-param-badge" title="This command requires parameters">
-                📋
+              <span
+                className="mcp-tool-param-badge"
+                title="This command requires parameters"
+              >
+                params
               </span>
             )}
           </div>
@@ -133,12 +171,22 @@ const ToolItem: React.FC<{
               ×
             </button>
           </div>
+          {tool.parameters?.description && (
+            <div className="mcp-form-description">
+              {tool.parameters.description}
+            </div>
+          )}
+          {tool.parameters?.required && tool.parameters.required.length > 0 && (
+            <div className="mcp-form-required">
+              Required: {tool.parameters.required.join(', ')}
+            </div>
+          )}
           <textarea
             className="mcp-form-input"
             value={parameters}
             onChange={e => setParameters(e.target.value)}
             placeholder='{"source": "print(\"Hello!\")", "type": "code"}'
-            rows={4}
+            rows={6}
           />
           {error && <div className="mcp-form-error">{error}</div>}
           <div className="mcp-form-actions">
@@ -212,19 +260,31 @@ export const MCPToolsPanel: React.FC<IMCPToolsPanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'tools' | 'messages'>('tools');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showOnlyWithParams, setShowOnlyWithParams] = useState(false);
 
   // Debug logging
   console.log(
     `MCPToolsPanel render: ${tools.length} tools, ${messages.length} messages`
   );
 
-  // Filter tools based on search term
-  const filteredTools = tools.filter(
-    (tool: ITool) =>
+  // Filter tools based on search term and parameter filter
+  const filteredTools = tools.filter((tool: ITool) => {
+    // Search term filter
+    const matchesSearch =
       tool.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (tool.label &&
-        tool.label.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+        tool.label.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // Parameter filter
+    const hasParameters =
+      tool.parameters &&
+      tool.parameters.properties &&
+      Object.keys(tool.parameters.properties).length > 0;
+
+    const matchesParamFilter = !showOnlyWithParams || hasParameters;
+
+    return matchesSearch && matchesParamFilter;
+  });
 
   console.log(
     `MCPToolsPanel: Filtered to ${filteredTools.length} tools (search: "${searchTerm}")`
@@ -269,6 +329,19 @@ export const MCPToolsPanel: React.FC<IMCPToolsPanelProps> = ({
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
+            <div className="mcp-filter-toggle">
+              <label className="mcp-toggle-label">
+                <input
+                  type="checkbox"
+                  checked={showOnlyWithParams}
+                  onChange={e => setShowOnlyWithParams(e.target.checked)}
+                  className="mcp-toggle-checkbox"
+                />
+                <span className="mcp-toggle-text">
+                  Show only with parameters
+                </span>
+              </label>
+            </div>
           </div>
 
           <div className="mcp-tools-list">
