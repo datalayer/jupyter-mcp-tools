@@ -22,6 +22,7 @@ const mcpIcon = new LabIcon({
  */
 export interface ITool {
   id: string;
+  commandId?: string; // Original JupyterLab command ID (before transformation)
   label: string;
   caption: string;
   usage: string;

@@ -165,12 +165,19 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
                 break
         
         if not tool:
+            self.log.error(f"Tool not found: {tool_id}")
+            self.log.info(f"Available tools: {[t.get('id') for t in WsEchoHandler.registered_tools]}")
             self.send_error_response(f"Tool not found: {tool_id}")
             return
         
-        # Transform tool_id back to original command ID (replace underscores with colons)
-        # for execution in JupyterLab's command registry
-        original_tool_id = tool_id.replace('_', ':')
+        # Get the original command ID from the tool if available
+        # Otherwise fall back to naive conversion (for backward compatibility)
+        original_tool_id = tool.get('commandId')
+        if not original_tool_id:
+            self.log.warning(f"Tool {tool_id} missing commandId field, using fallback conversion")
+            original_tool_id = tool_id.replace('_', ':')
+        
+        self.log.info(f"Mapped tool_id '{tool_id}' to command_id '{original_tool_id}'")
         
         # Relay the apply_tool message to the frontend using the original command ID
         relay_message = {

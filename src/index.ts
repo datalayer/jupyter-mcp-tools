@@ -166,6 +166,10 @@ class MCPToolsWebSocket {
 
     const tools: ITool[] = [];
 
+    // MCP tool name pattern - only letters, numbers, underscores, and hyphens
+    const mcpNamePattern = /^[a-zA-Z0-9_-]+$/;
+    let skippedCount = 0;
+
     // Iterate through all registered commands
     for (const commandId of allCommandIds) {
       try {
@@ -186,11 +190,21 @@ class MCPToolsWebSocket {
         // MCP tool names must match pattern: ^[a-zA-Z0-9_-]+$
         const toolId = commandId.replace(/:/g, '_');
 
+        // Validate that the transformed tool ID matches MCP pattern
+        if (!mcpNamePattern.test(toolId)) {
+          console.warn(
+            `Skipping command "${commandId}" - transformed tool ID "${toolId}" contains invalid characters for MCP (must match ^[a-zA-Z0-9_-]+$)`
+          );
+          skippedCount++;
+          continue;
+        }
+
         // Get command parameters using describedBy introspection
         const parameters = await this.getCommandParameters(commandId);
 
         const tool: ITool = {
           id: toolId,
+          commandId: commandId, // Store original command ID for execution
           label: label || toolId,
           caption: caption || '',
           usage: usage || '',
@@ -201,6 +215,12 @@ class MCPToolsWebSocket {
       } catch (error) {
         console.warn(`Error processing command ${commandId}:`, error);
       }
+    }
+
+    if (skippedCount > 0) {
+      console.log(
+        `Skipped ${skippedCount} commands with invalid MCP tool names`
+      );
     }
 
     console.log(`Successfully processed ${tools.length} tools`);

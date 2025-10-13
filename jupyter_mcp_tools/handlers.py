@@ -114,8 +114,32 @@ class MCPToolsExecuteHandler(APIHandler):
             
             self.log.info(f"Executing tool: {tool_id}")
             
-            # Transform tool_id back to original format (underscore to colon)
-            original_tool_id = tool_id.replace('_', ':')
+            # Find the tool in registered tools to get the original command ID
+            tool = None
+            for t in WsEchoHandler.registered_tools:
+                if t.get('id') == tool_id:
+                    tool = t
+                    break
+            
+            if not tool:
+                self.log.error(f"Tool not found in registry: {tool_id}")
+                self.log.info(f"Available tools: {[t.get('id') for t in WsEchoHandler.registered_tools]}")
+                self.set_status(404)
+                self.write(json.dumps({
+                    'success': False,
+                    'error': f'Tool not found: {tool_id}. Available tools: {[t.get("id") for t in WsEchoHandler.registered_tools[:5]]}'
+                }))
+                self.finish()
+                return
+            
+            # Get the original command ID from the tool if available
+            # Otherwise fall back to naive conversion (for backward compatibility)
+            original_tool_id = tool.get('commandId')
+            if not original_tool_id:
+                self.log.warning(f"Tool {tool_id} missing commandId field, using fallback conversion")
+                original_tool_id = tool_id.replace('_', ':')
+            
+            self.log.info(f"Mapped tool_id '{tool_id}' to command_id '{original_tool_id}'")
             
             # Create an event to wait for the result
             result_event = asyncio.Event()
