@@ -12,20 +12,31 @@ import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { URLExt } from '@jupyterlab/coreutils';
 import { ServerConnection } from '@jupyterlab/services';
 import { ILabShell } from '@jupyterlab/application';
+import { INotebookTracker } from '@jupyterlab/notebook';
 
 import { requestAPI } from './handler';
 import { MCPToolsWidget, ITool } from './components/MCPToolsWidget';
+import { registerCommands } from './commands';
 
 /**
  * Safely serialize a value for JSON transmission, handling circular references
  */
-function safeSerialize(obj: any, maxDepth = 3, currentDepth = 0, seen = new WeakSet()): any {
+function safeSerialize(
+  obj: any,
+  maxDepth = 3,
+  currentDepth = 0,
+  seen = new WeakSet()
+): any {
   // Handle primitives
   if (obj === null || obj === undefined) {
     return obj;
   }
-  
-  if (typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string') {
+
+  if (
+    typeof obj === 'boolean' ||
+    typeof obj === 'number' ||
+    typeof obj === 'string'
+  ) {
     return obj;
   }
 
@@ -36,7 +47,9 @@ function safeSerialize(obj: any, maxDepth = 3, currentDepth = 0, seen = new Weak
 
   // Handle arrays
   if (Array.isArray(obj)) {
-    return obj.slice(0, 100).map(item => safeSerialize(item, maxDepth, currentDepth + 1, seen));
+    return obj
+      .slice(0, 100)
+      .map(item => safeSerialize(item, maxDepth, currentDepth + 1, seen));
   }
 
   // Handle objects with circular reference detection
@@ -44,12 +57,12 @@ function safeSerialize(obj: any, maxDepth = 3, currentDepth = 0, seen = new Weak
     if (seen.has(obj)) {
       return '<circular reference>';
     }
-    
+
     seen.add(obj);
-    
+
     const result: any = {};
     const keys = Object.keys(obj).slice(0, 100); // Limit to 100 keys
-    
+
     for (const key of keys) {
       try {
         result[key] = safeSerialize(obj[key], maxDepth, currentDepth + 1, seen);
@@ -57,7 +70,7 @@ function safeSerialize(obj: any, maxDepth = 3, currentDepth = 0, seen = new Weak
         result[key] = '<serialization error>';
       }
     }
-    
+
     return result;
   }
 
@@ -157,13 +170,25 @@ class MCPToolsWebSocket {
     allCommandIds.forEach(commandId => {
       try {
         // Check if command is enabled
-        const isEnabled = commands.isEnabled(commandId);
+        // Note: For context-dependent commands (like notebook:append-execute),
+        // isEnabled may be false at registration time but true later.
+        // We set isEnabled to true by default to allow users to try executing.
+        // The actual execution will fail gracefully if the command is not available.
+        let isEnabled = true;
+        try {
+          isEnabled = commands.isEnabled(commandId);
+        } catch (e) {
+          // If isEnabled check fails, default to true
+          isEnabled = true;
+        }
+
         const label = commands.label(commandId);
         const caption = commands.caption(commandId);
         const usage = commands.usage(commandId);
 
-        // Replace colons with spaces in the command ID for MCP compatibility
-        const toolId = commandId.replace(/:/g, ' ');
+        // Replace colons with underscores in the command ID for MCP compatibility
+        // MCP tool names must match pattern: ^[a-zA-Z0-9_-]+$
+        const toolId = commandId.replace(/:/g, '_');
 
         const tool: ITool = {
           id: toolId,
@@ -200,6 +225,27 @@ class MCPToolsWebSocket {
    */
   private getCommandParameters(commandId: string): any {
     try {
+      // Define parameter schemas for known MCP Tools commands
+      if (commandId === 'notebook:append-execute') {
+        return {
+          type: 'object',
+          properties: {
+            source: {
+              type: 'string',
+              description: 'The source code to insert in the cell'
+            },
+            type: {
+              type: 'string',
+              enum: ['code', 'markdown', 'raw'],
+              description: 'The cell type',
+              default: 'code'
+            }
+          },
+          required: ['source'],
+          description: 'Append and execute a cell in the current notebook'
+        };
+      }
+
       // Try to get the command's schema or args description
       // Note: Not all commands have a schema, so we return a generic structure
       return {
@@ -225,8 +271,8 @@ class MCPToolsWebSocket {
 
       if (message.type === 'apply_tool') {
         this.applyToolFromServer(
-          message.tool_id, 
-          message.parameters || {}, 
+          message.tool_id,
+          message.parameters || {},
           message.execution_id
         );
       }
@@ -242,8 +288,12 @@ class MCPToolsWebSocket {
     try {
       console.log(`Executing tool LOCALLY: ${toolId}`, parameters);
 
-      if (this.app.commands.hasCommand(toolId)) {
-        const result = await this.app.commands.execute(toolId, parameters);
+      // Convert underscore-separated tool ID back to colon-separated command ID
+      // The tool ID was transformed from "console:create" to "console_create" during registration
+      const commandId = toolId.replace(/_/g, ':');
+
+      if (this.app.commands.hasCommand(commandId)) {
+        const result = await this.app.commands.execute(commandId, parameters);
         console.log(`Tool ${toolId} executed successfully`);
 
         // Sanitize result to avoid circular references in message log
@@ -257,11 +307,11 @@ class MCPToolsWebSocket {
           success: true
         });
       } else {
-        console.error(`Command not found: ${toolId}`);
+        console.error(`Command not found: ${commandId}`);
         this.widget.addMessage('sent', 'local_execute', {
           tool_id: toolId,
           parameters,
-          error: `Command not found: ${toolId}`,
+          error: `Command not found: ${commandId}`,
           success: false
         });
       }
@@ -279,9 +329,15 @@ class MCPToolsWebSocket {
   /**
    * Apply/execute a tool (command) - REMOTE execution (via WebSocket)
    */
-  private async applyToolRemote(toolId: string, parameters: any): Promise<void> {
+  private async applyToolRemote(
+    toolId: string,
+    parameters: any
+  ): Promise<void> {
     try {
-      console.log(`Sending tool execution request via WebSocket: ${toolId}`, parameters);
+      console.log(
+        `Sending tool execution request via WebSocket: ${toolId}`,
+        parameters
+      );
 
       // Send apply_tool message to server
       const message = {
@@ -313,9 +369,9 @@ class MCPToolsWebSocket {
     try {
       console.log(`Applying tool from server: ${toolId}`, parameters);
 
-      // Convert space-separated tool ID back to colon-separated command ID
+      // Convert underscore-separated tool ID back to colon-separated command ID
       // This reverses the transformation done in registerTools()
-      const commandId = toolId.replace(/ /g, ':');
+      const commandId = toolId.replace(/_/g, ':');
 
       if (this.app.commands.hasCommand(commandId)) {
         const result = await this.app.commands.execute(commandId, parameters);
@@ -389,15 +445,19 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description: 'Jupyter MCP Tools.',
   autoStart: true,
   optional: [ISettingRegistry],
-  requires: [ILabShell],
+  requires: [ILabShell, INotebookTracker],
   activate: (
     app: JupyterFrontEnd,
     labShell: ILabShell,
+    notebookTracker: INotebookTracker,
     settingRegistry: ISettingRegistry | null
   ) => {
     console.log(
       'JupyterLab extension @datalayer/jupyter-mcp-tools is activated!'
     );
+
+    // Register MCP Tools commands
+    registerCommands(app, notebookTracker);
 
     if (settingRegistry) {
       settingRegistry

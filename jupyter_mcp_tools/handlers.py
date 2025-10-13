@@ -62,11 +62,17 @@ class MCPToolsListHandler(JupyterHandler):
         # Filter tools
         tools = transformed_tools
         if query:
-            # Filter by ID or label matching the query
+            # Support comma-separated queries (e.g., "console_create,notebook_append")
+            query_terms = [term.strip().lower() for term in query.split(',')]
+            
+            # Filter by ID or label matching any of the query terms
             tools = [
                 tool for tool in tools
-                if (query.lower() in tool.get('id', '').lower() or
-                    query.lower() in tool.get('label', '').lower())
+                if any(
+                    term in tool.get('id', '').lower() or
+                    term in tool.get('label', '').lower()
+                    for term in query_terms
+                )
             ]
         
         if enabled_only:

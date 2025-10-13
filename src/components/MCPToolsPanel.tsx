@@ -50,28 +50,32 @@ const ToolItem: React.FC<{
   const [parameters, setParameters] = useState('{}');
   const [error, setError] = useState<string | null>(null);
 
-  const handleExecute = (mode: 'local' | 'remote') => {
-    // Check if tool needs parameters
-    const hasParameters =
-      tool.parameters &&
-      tool.parameters.properties &&
-      Object.keys(tool.parameters.properties).length > 0;
+  // Check if tool has parameters defined
+  const hasParameters =
+    tool.parameters &&
+    tool.parameters.properties &&
+    Object.keys(tool.parameters.properties).length > 0;
 
+  const handleExecute = (mode: 'local' | 'remote') => {
+    // If tool has parameters and form is not shown, show the form first
     if (hasParameters && !showForm) {
       setShowForm(true);
-    } else {
-      try {
-        const parsedParams = JSON.parse(parameters);
-        if (mode === 'local') {
-          onExecuteLocal(tool.id, parsedParams);
-        } else {
-          onExecuteRemote(tool.id, parsedParams);
-        }
-        setShowForm(false);
-        setError(null);
-      } catch (e) {
-        setError('Invalid JSON format');
+      return;
+    }
+
+    // Execute the tool
+    try {
+      const parsedParams = JSON.parse(parameters);
+      if (mode === 'local') {
+        onExecuteLocal(tool.id, parsedParams);
+      } else {
+        onExecuteRemote(tool.id, parsedParams);
       }
+      setShowForm(false);
+      setError(null);
+      setParameters('{}'); // Reset parameters after execution
+    } catch (e) {
+      setError('Invalid JSON format');
     }
   };
 
@@ -87,6 +91,11 @@ const ToolItem: React.FC<{
         <div className="mcp-tool-info">
           <div className="mcp-tool-label" title={tool.caption}>
             {tool.label || tool.id}
+            {hasParameters && (
+              <span className="mcp-tool-param-badge" title="This command requires parameters">
+                📋
+              </span>
+            )}
           </div>
           <div className="mcp-tool-id">{tool.id}</div>
         </div>
@@ -128,7 +137,7 @@ const ToolItem: React.FC<{
             className="mcp-form-input"
             value={parameters}
             onChange={e => setParameters(e.target.value)}
-            placeholder='{"key": "value"}'
+            placeholder='{"source": "print(\"Hello!\")", "type": "code"}'
             rows={4}
           />
           {error && <div className="mcp-form-error">{error}</div>}
@@ -225,9 +234,13 @@ export const MCPToolsPanel: React.FC<IMCPToolsPanelProps> = ({
     <div className="mcp-tools-panel">
       <div className="mcp-panel-header">
         <div className="mcp-panel-stats">
-          <span title="Total tools"><strong>{tools.length}</strong> tools</span>
+          <span title="Total tools">
+            <strong>{tools.length}</strong> tools
+          </span>
           <span className="mcp-stats-separator">•</span>
-          <span title="Total messages"><strong>{messages.length}</strong> messages</span>
+          <span title="Total messages">
+            <strong>{messages.length}</strong> messages
+          </span>
         </div>
       </div>
 
@@ -265,9 +278,9 @@ export const MCPToolsPanel: React.FC<IMCPToolsPanelProps> = ({
               </div>
             ) : (
               filteredTools.map(tool => (
-                <ToolItem 
-                  key={tool.id} 
-                  tool={tool} 
+                <ToolItem
+                  key={tool.id}
+                  tool={tool}
                   onExecuteLocal={onExecuteToolLocal}
                   onExecuteRemote={onExecuteToolRemote}
                 />

@@ -93,18 +93,28 @@ class MCPToolsClient:
         
         Args:
             query: Optional filter string to match against tool ID or label.
-                   If provided, only tools matching this query will be returned.
+                   Can be a single command (e.g., "console_create") or 
+                   multiple commands separated by commas (e.g., "console_create,notebook_append-execute").
+                   Each command in the list will be matched against tool IDs and labels.
+                   If provided, only tools matching any of the queries will be returned.
             enabled_only: If True, only return enabled tools
             wait_timeout: Seconds to wait for JupyterLab extension to register tools
         
         Returns:
             List of tool dictionaries
         
-        Example:
+        Examples:
             >>> async with MCPToolsClient() as client:
-            ...     tools = await client.get_tools(query="console:create")
+            ...     # Single query
+            ...     tools = await client.get_tools(query="console_create")
             ...     print(tools[0]['label'])
             'Console'
+            
+            >>> async with MCPToolsClient() as client:
+            ...     # Multiple queries (comma-separated)
+            ...     tools = await client.get_tools(query="console_create,notebook_append")
+            ...     print(len(tools))
+            2
         """
         if not self._session:
             await self.connect()
@@ -219,17 +229,25 @@ async def get_tools(
     Args:
         base_url: Base URL of the JupyterLab server
         token: Authentication token
-        query: Optional filter string
+        query: Optional filter string to match against tool ID or label.
+               Can be a single command (e.g., "console_create") or 
+               multiple commands separated by commas (e.g., "console_create,notebook_append-execute").
         enabled_only: If True, only return enabled tools
         wait_timeout: Seconds to wait for JupyterLab extension to register tools
     
     Returns:
         List of tool dictionaries
     
-    Example:
-        >>> tools = await get_tools(query="console:create")
+    Examples:
+        >>> # Single query
+        >>> tools = await get_tools(query="console_create")
         >>> print(len(tools))
         1
+        
+        >>> # Multiple queries (comma-separated)
+        >>> tools = await get_tools(query="console_create,notebook_append")
+        >>> print(len(tools))
+        2
     """
     async with MCPToolsClient(base_url, token) as client:
         return await client.get_tools(query=query, enabled_only=enabled_only, wait_timeout=wait_timeout)

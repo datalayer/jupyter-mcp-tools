@@ -156,13 +156,11 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
         
         self.log.info(f"Applying tool: {tool_id}")
         
-        # Transform tool_id: replace underscores with colons to match original command IDs
-        original_tool_id = tool_id.replace('_', ':')
-        
-        # Find the tool in registered tools using the original ID
+        # Find the tool in registered tools using the underscore ID
+        # (tools are registered with underscores already applied)
         tool = None
         for t in WsEchoHandler.registered_tools:
-            if t.get('id') == original_tool_id:
+            if t.get('id') == tool_id:
                 tool = t
                 break
         
@@ -170,7 +168,11 @@ class WsEchoHandler(WebSocketMixin, WebSocketHandler, JupyterHandler):
             self.send_error_response(f"Tool not found: {tool_id}")
             return
         
-        # Relay the apply_tool message to the frontend using original ID
+        # Transform tool_id back to original command ID (replace underscores with colons)
+        # for execution in JupyterLab's command registry
+        original_tool_id = tool_id.replace('_', ':')
+        
+        # Relay the apply_tool message to the frontend using the original command ID
         relay_message = {
             'type': 'apply_tool',
             'tool_id': original_tool_id,

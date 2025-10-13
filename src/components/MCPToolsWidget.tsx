@@ -3,7 +3,6 @@
  * Distributed under the terms of the Modified BSD License.
  */
 
-
 import { ReactWidget } from '@jupyterlab/apputils';
 import { LabIcon } from '@jupyterlab/ui-components';
 import React from 'react';
@@ -47,8 +46,12 @@ export interface IMessageLog {
 export class MCPToolsWidget extends ReactWidget {
   private _tools: ITool[] = [];
   private _messages: IMessageLog[] = [];
-  private _executeCallbackLocal: ((toolId: string, parameters: any) => void) | null = null;
-  private _executeCallbackRemote: ((toolId: string, parameters: any) => void) | null = null;
+  private _executeCallbackLocal:
+    | ((toolId: string, parameters: any) => void)
+    | null = null;
+  private _executeCallbackRemote:
+    | ((toolId: string, parameters: any) => void)
+    | null = null;
 
   constructor() {
     super();

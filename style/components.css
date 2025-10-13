@@ -10,6 +10,16 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  min-height: 0;
+  position: relative;
+}
+
+/* Ensure the widget container fills parent */
+.jp-MCPToolsWidget > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .mcp-tools-panel {
@@ -128,24 +138,21 @@
 
 /* Tools list - scrollable container */
 .mcp-tools-list {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 12px;
   min-height: 0; /* Critical for flex children with overflow */
-  height: 100%; /* Ensure it takes available height */
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 /* Tool Item */
 .mcp-tool-item {
-  margin-bottom: 0;
+  margin-bottom: 10px;
   border: 1px solid var(--jp-border-color2);
   border-radius: 4px;
   background: var(--jp-layout-color2);
   transition: all 0.2s;
+  flex-shrink: 0; /* Prevent items from shrinking */
 }
 
 .mcp-tool-item:hover {
