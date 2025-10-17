@@ -74,7 +74,7 @@ class MCPToolsListHandler(JupyterHandler):
                     for term in query_terms
                 )
             ]
-        
+
         if enabled_only:
             tools = [tool for tool in tools if tool.get('isEnabled', False)]
         

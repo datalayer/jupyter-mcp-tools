@@ -132,7 +132,9 @@ class MCPToolsClient:
             params['query'] = query
         if enabled_only:
             params['enabled_only'] = 'true'
-        
+        else:
+            params['enabled_only'] = 'false'
+
         try:
             async with self._session.get(url, params=params) as response:
                 if response.status == 200:
