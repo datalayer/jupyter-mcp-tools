@@ -14,11 +14,33 @@
 
 [![Github Actions Status](https://github.com/datalayer/jupyter-mcp-tools/workflows/Build/badge.svg)](https://github.com/datalayer/jupyter-mcp-tools/actions/workflows/build.yml)
 
-Jupyter MCP Tools.
-
 This extension is composed of a Python package named `jupyter_mcp_tools`
 for the server extension and a NPM package named `@datalayer/jupyter-mcp-tools`
 for the frontend extension.
+
+It enables the use of JupyterLab commands as MCP tools.
+
+![](https://assets.datalayer.tech/jupyter-mcp-tools.gif)
+
+This extension is used by [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server) to enable JupyterLab commands such as opening notebooks through  MCP tools.
+
+## Execution Modes
+
+The extension supports two execution modes for JupyterLab commands:
+
+### Local Mode
+- **Direct Execution**: Commands are executed directly within the JupyterLab frontend using the built-in command registry
+- **No Network Required**: Immediate execution without WebSocket communication
+- **Use Case**: Testing commands and direct UI interaction within JupyterLab itself
+- **Implementation**: Calls `app.commands.execute()` directly in the browser
+
+### Remote Mode  
+- **WebSocket Communication**: Commands are sent via WebSocket to the backend server extension
+- **External Access**: Enables external MCP clients to execute JupyterLab commands remotely
+- **Use Case**: Integration with AI agents and MCP clients like [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server)
+- **Implementation**: Messages are transmitted through WebSocket protocol to backend handlers
+
+The remote mode is what makes this extension valuable for MCP integration - it allows AI agents to trigger JupyterLab commands (like opening notebooks, executing cells, etc.) from outside the JupyterLab environment through a standardized protocol.
 
 ## Requirements
 
