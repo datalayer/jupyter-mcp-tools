@@ -123,7 +123,7 @@ class MCPToolsClient:
         # We need to query through the WebSocket or add an HTTP endpoint
         # For now, we'll add an HTTP endpoint to the extension
         
-        url = urljoin(self.base_url, '/jupyter-mcp-tools/tools')
+        url = urljoin(self.base_url + '/', 'jupyter-mcp-tools/tools')
         params = {
             'timeout': str(wait_timeout)
         }
@@ -195,7 +195,7 @@ class MCPToolsClient:
         if not self._session:
             await self.connect()
         
-        url = urljoin(self.base_url, '/jupyter-mcp-tools/execute')
+        url = urljoin(self.base_url + '/', 'jupyter-mcp-tools/execute')
         payload = {
             'tool_id': tool_id,
             'parameters': parameters or {}
