@@ -16,7 +16,7 @@ import { requestAPI } from './handler';
 import { MCPToolsWidget } from './components/MCPToolsWidget';
 import { registerCommands } from './commands';
 import { MCPToolsWebSocket } from './websocket';
-import inputPromptPlugin from './inputPrompt';
+import inputPromptPlugins from './inputPrompt';
 
 /**
  * Initialization data for the @datalayer/jupyter-mcp-tools extension.
@@ -88,8 +88,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
 };
 
 /**
- * Export both plugins as an array
+ * Export all plugins as an array
  */
-const plugins: JupyterFrontEndPlugin<any>[] = [plugin, inputPromptPlugin];
+const plugins: JupyterFrontEndPlugin<any>[] = [plugin, ...inputPromptPlugins];
 
 export default plugins;

@@ -12,6 +12,7 @@ import { NotebookActions } from '@jupyterlab/notebook';
  */
 export namespace CommandIDs {
   export const appendExecute = 'notebook:append-execute';
+  export const getSelectedCell = 'notebook:get-selected-cell';
 }
 
 /**
@@ -94,6 +95,65 @@ export function registerCommands(
         cellType: type,
         cellIndex: notebook.activeCellIndex
       };
+    }
+  });
+
+  /**
+   * Command: notebook:get-selected-cell
+   *
+   * Gets information about the currently selected cell without executing it.
+   */
+  app.commands.addCommand(CommandIDs.getSelectedCell, {
+    label: 'Get Selected Cell',
+    caption: 'Get information about the currently selected cell',
+    execute: () => {
+      // Get the current notebook panel
+      const current = notebookTracker.currentWidget;
+      
+      if (!current) {
+        console.warn('No active notebook');
+        return {
+          error: 'No active notebook',
+          success: false
+        };
+      }
+
+      const notebook = current.content;
+      const activeCell = notebook.activeCell;
+
+      if (!activeCell) {
+        console.warn('No active cell in notebook');
+        return {
+          error: 'No active cell',
+          success: false
+        };
+      }
+
+      const cellIndex = notebook.widgets.indexOf(activeCell);
+
+      const cellInfo = {
+        success: true,
+        cellType: activeCell.model.type,
+        cellIndex: cellIndex,
+        source: activeCell.model.sharedModel.getSource(),
+        metadata: activeCell.model.metadata,
+        executionCount: activeCell.model.type === 'code' 
+          ? (activeCell.model as any).executionCount 
+          : null
+      };
+
+      console.log('Selected cell information:', cellInfo);
+      
+      const message = `Cell ${cellIndex + 1} (${cellInfo.cellType}): ${
+        cellInfo.source.substring(0, 50)
+      }${cellInfo.source.length > 50 ? '...' : ''}`;
+      
+      console.log(message);
+
+      return cellInfo;
+    },
+    isEnabled: () => {
+      return notebookTracker.currentWidget !== null;
     }
   });
 

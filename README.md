@@ -42,6 +42,67 @@ The extension supports two execution modes for JupyterLab commands:
 
 The remote mode is what makes this extension valuable for MCP integration - it allows AI agents to trigger JupyterLab commands (like opening notebooks, executing cells, etc.) from outside the JupyterLab environment through a standardized protocol.
 
+## Additional Commands
+
+This extension provides custom JupyterLab commands specifically designed for MCP integration:
+
+### `notebook:append-execute`
+
+Appends a new cell at the end of the current notebook with the given source code and optionally executes it.
+
+**Parameters:**
+- `source` (string, required): The source code to insert in the cell
+- `type` (string, optional): The cell type - `'code'`, `'markdown'`, or `'raw'` (default: `'code'`)
+
+**Returns:**
+```javascript
+{
+  success: true,
+  cellType: 'code',
+  cellIndex: 5  // 0-based index of the new cell
+}
+```
+
+**Example usage:**
+```javascript
+app.commands.execute('notebook:append-execute', {
+  source: 'print("Hello from MCP!")',
+  type: 'code'
+});
+```
+
+### `notebook:get-selected-cell`
+
+Gets information about the currently selected/active cell in the notebook without executing it.
+
+**Parameters:** None
+
+**Returns:**
+```javascript
+{
+  success: true,
+  cellType: 'code',           // 'code', 'markdown', or 'raw'
+  cellIndex: 3,               // 0-based index
+  source: 'print("hello")',   // cell content
+  metadata: {...},            // cell metadata
+  executionCount: 5           // execution count (code cells only, null otherwise)
+}
+```
+
+**Example usage:**
+```javascript
+const cellInfo = await app.commands.execute('notebook:get-selected-cell');
+console.log(`Cell ${cellInfo.cellIndex + 1}: ${cellInfo.source}`);
+```
+
+**Note:** The command is only enabled when a notebook is open and returns an error object if no cell is selected:
+```javascript
+{
+  success: false,
+  error: 'No active cell'
+}
+```
+
 ## Requirements
 
 - JupyterLab >= 4.0.0
