@@ -8,7 +8,7 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import { INotebookTracker, NotebookPanel, Notebook } from '@jupyterlab/notebook';
+import { INotebookTracker, Notebook } from '@jupyterlab/notebook';
 import { CodeCell } from '@jupyterlab/cells';
 
 /**
@@ -19,17 +19,40 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
   if (prompt) {
     const executionCount = cell.model.executionCount;
     
+    // Clear existing content
+    prompt.innerHTML = '';
+    
     if (executionCount !== null && executionCount !== undefined) {
-      // Show execution count with cell index appended
-      prompt.textContent = `[${executionCount}|${index + 1}]:`;
+      // Show execution count in default style
+      const execSpan = document.createElement('span');
+      execSpan.textContent = `[${executionCount}]`;
+      execSpan.className = 'jp-mcp-exec-count';
+      prompt.appendChild(execSpan);
+      
+      // Show cell index in different style
+      const indexSpan = document.createElement('span');
+      indexSpan.textContent = `[${index + 1}]`;
+      indexSpan.className = 'jp-mcp-cell-index';
+      prompt.appendChild(indexSpan);
+      
+      // Add colon
+      const colon = document.createElement('span');
+      colon.textContent = ':';
+      prompt.appendChild(colon);
     } else {
       // No execution yet, show cell index only
-      prompt.textContent = `[${index + 1}]:`;
+      const indexSpan = document.createElement('span');
+      indexSpan.textContent = `[${index + 1}]`;
+      indexSpan.className = 'jp-mcp-cell-index';
+      prompt.appendChild(indexSpan);
+      
+      // Add colon
+      const colon = document.createElement('span');
+      colon.textContent = ':';
+      prompt.appendChild(colon);
     }
     
-    // Add custom class for styling
-    prompt.classList.add('jp-mcp-indexed-input-prompt');
-    console.log(`Updated prompt for cell ${index + 1}:`, prompt.textContent);
+    console.log(`Updated prompt for cell ${index + 1}`);
   }
 }
 
@@ -103,9 +126,24 @@ const inputPromptPlugin: JupyterFrontEndPlugin<void> = {
     // Register custom CSS for the indexed input prompt
     const style = document.createElement('style');
     style.textContent = `
-      .jp-mcp-indexed-input-prompt {
-        font-weight: bold !important;
-        color: var(--jp-content-font-color1) !important;
+      .jp-InputPrompt {
+        min-width: auto !important;
+        width: auto !important;
+        overflow: visible !important;
+      }
+      
+      .jp-mcp-exec-count {
+        color: var(--jp-content-font-color1);
+        font-weight: bold;
+      }
+      
+      .jp-mcp-cell-index {
+        color: var(--jp-warn-color1);
+        font-size: 0.85em;
+        font-style: italic;
+        opacity: 0.8;
+        margin-left: 2px;
+        white-space: nowrap;
       }
     `;
     document.head.appendChild(style);
