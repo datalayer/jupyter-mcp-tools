@@ -4,7 +4,7 @@
   ~ BSD 3-Clause License
 -->
 
-[![Datalayer](https://assets.datalayer.tech/datalayer-25.svg)](https://datalayer.io)
+[![Datalayer](https://images.datalayer.io/brand/logos/datalayer-long.svg)](https://datalayer.io)
 
 [![Become a Sponsor](https://img.shields.io/static/v1?label=Become%20a%20Sponsor&message=%E2%9D%A4&logo=GitHub&style=flat&color=1ABC9C)](https://github.com/sponsors/datalayer)
 
@@ -20,7 +20,7 @@ for the frontend extension.
 
 It enables the use of JupyterLab commands as MCP tools.
 
-![](https://assets.datalayer.tech/jupyter-mcp-tools.gif)
+![](https://images.datalayer.io/product/jupyter-mcp-tools/jupyter-mcp-tools.gif)
 
 This extension is used by [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server) to enable JupyterLab commands such as opening notebooks through  MCP tools.
 
@@ -41,6 +41,110 @@ The extension supports two execution modes for JupyterLab commands:
 - **Implementation**: Messages are transmitted through WebSocket protocol to backend handlers
 
 The remote mode is what makes this extension valuable for MCP integration - it allows AI agents to trigger JupyterLab commands (like opening notebooks, executing cells, etc.) from outside the JupyterLab environment through a standardized protocol.
+
+## Available Tools
+
+The `jupyter-mcp-tools` extension dynamically registers **all available JupyterLab commands** as MCP tools. The exact list of available tools depends on the installed JupyterLab extensions and the current context, but here are some commonly available tools :
+
+> **Note**: This extension automatically discovers and makes available all JupyterLab commands as MCP tools. Command IDs are converted from `namespace:command` format to `namespace_command` for MCP compatibility. The list below represents commonly available commands but is not exhaustive.
+
+### Core Notebook Commands
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `notebook_run-all-cells` | Execute all cells in the current notebook sequentially | None |
+| `notebook_get-selected-cell` | Get information about the currently selected cell | None |
+| `notebook_append-execute` | Append a new cell at the end of notebook with source code and execute it | `source` (string), `type` (code/markdown/raw) |
+| `notebook_insert-cell-below` | Insert a new cell below the current cell | `activate` (boolean) |
+| `notebook_insert-cell-above` | Insert a new cell above the current cell | `activate` (boolean) |
+| `notebook_delete-cell` | Delete the currently selected cell | None |
+| `notebook_cut-cell` | Cut the currently selected cell | None |
+| `notebook_copy-cell` | Copy the currently selected cell | None |
+| `notebook_paste-cell-below` | Paste cell below the current cell | None |
+| `notebook_paste-cell-above` | Paste cell above the current cell | None |
+| `notebook_select-next` | Select the next cell | None |
+| `notebook_select-previous` | Select the previous cell | None |
+| `notebook_extend-selection-below` | Extend selection to cell below | None |
+| `notebook_extend-selection-above` | Extend selection to cell above | None |
+| `notebook_move-cell-up` | Move current cell up | None |
+| `notebook_move-cell-down` | Move current cell down | None |
+| `notebook_split-cell` | Split current cell at cursor position | None |
+| `notebook_merge-cell-above` | Merge current cell with the one above | None |
+| `notebook_merge-cell-below` | Merge current cell with the one below | None |
+| `notebook_run-cell` | Execute the currently selected cell | None |
+| `notebook_run-cell-and-select-next` | Execute cell and move to next | None |
+| `notebook_run-cell-and-insert-below` | Execute cell and insert new cell below | None |
+
+### Console Commands
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `console_create` | Create a new console | `activate` (boolean), `insertMode` (string), `path` (string) |
+| `console_clear` | Clear the console output | None |
+| `console_restart-kernel` | Restart the console kernel | None |
+| `console_interrupt-kernel` | Interrupt the console kernel | None |
+| `console_inject` | Inject code into console | `code` (string), `activate` (boolean) |
+
+### File/Document Management
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `docmanager_open` | Open a document by path | `path` (string), `factory` (string), `kernel` (object) |
+| `docmanager_new-untitled` | Create a new untitled document | `type` (string), `path` (string) |
+| `docmanager_save` | Save the current document | None |
+| `docmanager_save-as` | Save document with a new name | None |
+| `docmanager_rename` | Rename the current document | `newName` (string) |
+| `docmanager_delete` | Delete a document | `path` (string) |
+| `docmanager_duplicate` | Duplicate a document | `path` (string) |
+
+### File Browser Commands  
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `filebrowser_go-to-path` | Navigate to a specific path | `path` (string) |
+| `filebrowser_refresh` | Refresh the file browser | None |
+| `filebrowser_toggle-hidden-files` | Toggle showing hidden files | None |
+| `filebrowser_create-new-directory` | Create a new directory | `path` (string) |
+| `filebrowser_upload` | Upload files | `path` (string) |
+| `filebrowser_download` | Download files | `path` (string) |
+
+### Kernel Management
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `kernel_restart` | Restart the current kernel | None |
+| `kernel_interrupt` | Interrupt the current kernel | None |
+| `kernel_shutdown` | Shutdown the current kernel | None |
+| `kernel_reconnect` | Reconnect to kernel | None |
+| `kernel_change` | Change to a different kernel | `kernel` (object) |
+
+### UI/Layout Commands
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `application_toggle-left-area` | Toggle the left sidebar | None |
+| `application_toggle-right-area` | Toggle the right sidebar | None |
+| `application_toggle-presentation-mode` | Toggle presentation mode | None |
+| `application_set-theme` | Change the UI theme | `theme` (string) |
+| `mainmenu_open-edit` | Open the Edit menu | None |
+| `mainmenu_open-file` | Open the File menu | None |
+| `mainmenu_open-help` | Open the Help menu | None |
+
+### Cell Type Conversion  
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `notebook_change-cell-to-code` | Convert cell to code cell | None |
+| `notebook_change-cell-to-markdown` | Convert cell to markdown cell | None |
+| `notebook_change-cell-to-raw` | Convert cell to raw cell | None |
+
+### Search and Replace
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `documentsearch_start` | Start document search | `query` (string), `caseSensitive` (boolean), `wholeWord` (boolean), `regex` (boolean) |
+| `documentsearch_highlightNext` | Highlight next search result | None |
+| `documentsearch_highlightPrevious` | Highlight previous search result | None |
+
+### Terminal Commands
+| Tool ID | Description | Parameters |
+|---------|-------------|-------------|
+| `terminal_create-new` | Create a new terminal | `cwd` (string) |
+| `terminal_refresh` | Refresh terminal | None |
+
+To see all available tools in your specific JupyterLab installation, you can open the MCP Tools panel in the left sidebar to browse available tools.
 
 ## Additional Commands
 
@@ -92,7 +196,7 @@ Gets information about the currently selected/active cell in the notebook withou
 **Example usage:**
 ```javascript
 const cellInfo = await app.commands.execute('notebook:get-selected-cell');
-console.log(`Cell ${cellInfo.cellIndex + 1}: ${cellInfo.source}`);
+console.log(`Cell ${cellInfo.cellIndex}: ${cellInfo.source}`);
 ```
 
 **Note:** The command is only enabled when a notebook is open and returns an error object if no cell is selected:
@@ -102,6 +206,12 @@ console.log(`Cell ${cellInfo.cellIndex + 1}: ${cellInfo.source}`);
   error: 'No active cell'
 }
 ```
+
+## Visual Cell Indexing
+
+Installing this extension enhances your JupyterLab experience by displaying cell indices to the left of each cell in **orange italics**. The goal is to provide a clear and consistent way to reference cells, especially useful when interacting with AI agents through MCP with the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server). The tools of the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server) identify the cells by their index, so having these indices visible helps you when instructing the AI to interact with specific cells.
+
+![Cell Indices](https://images.datalayer.io/product/jupyter-mcp-tools/cell-indices.png)
 
 ## Requirements
 

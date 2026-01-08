@@ -31,7 +31,7 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
       
       // Show cell index in different style
       const indexSpan = document.createElement('span');
-      indexSpan.textContent = `[${index + 1}]`;
+      indexSpan.textContent = `[${index}]`;
       indexSpan.className = 'jp-mcp-cell-index';
       prompt.appendChild(indexSpan);
       
@@ -42,7 +42,7 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
     } else {
       // No execution yet, show cell index only
       const indexSpan = document.createElement('span');
-      indexSpan.textContent = `[${index + 1}]`;
+      indexSpan.textContent = `[${index}]`;
       indexSpan.className = 'jp-mcp-cell-index';
       prompt.appendChild(indexSpan);
       
@@ -52,7 +52,7 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
       prompt.appendChild(colon);
     }
     
-    console.log(`Updated prompt for cell ${index + 1}`);
+    console.log(`Updated prompt for cell ${index}`);
   }
 }
 
