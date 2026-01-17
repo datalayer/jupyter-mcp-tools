@@ -20,7 +20,7 @@ for the frontend extension.
 
 It enables the use of JupyterLab commands as MCP tools.
 
-![](https://images.datalayer.io/product/jupyter-mcp-tools/jupyter-mcp-tools.gif)
+![](https://images.datalayer.io/products/jupyter-mcp-tools/jupyter-mcp-tools.gif)
 
 This extension is used by [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server) to enable JupyterLab commands such as opening notebooks through  MCP tools.
 
@@ -211,7 +211,7 @@ console.log(`Cell ${cellInfo.cellIndex}: ${cellInfo.source}`);
 
 Installing this extension enhances your JupyterLab experience by displaying cell indices to the left of each cell in **orange italics**. The goal is to provide a clear and consistent way to reference cells, especially useful when interacting with AI agents through MCP with the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server). The tools of the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server) identify the cells by their index, so having these indices visible helps you when instructing the AI to interact with specific cells.
 
-![Cell Indices](https://images.datalayer.io/product/jupyter-mcp-tools/cell-indices.png)
+![Cell Indices](https://images.datalayer.io/products/jupyter-mcp-tools/cell-indices.png)
 
 ## Requirements
 
