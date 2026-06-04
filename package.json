@@ -98,6 +98,9 @@
         "typescript": "~5.8.0",
         "ws": "^8.18.3"
     },
+    "resolutions": {
+        "webpack": "5.106.0"
+    },
     "sideEffects": [
         "style/*.css",
         "style/index.js"
