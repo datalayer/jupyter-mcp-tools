@@ -27,7 +27,7 @@ jobs:
     - name: Lint the extension
       run: |
         set -eux
-        jlpm
+        jlpm install --no-immutable
         jlpm run lint:check
 
     - name: Test the extension
