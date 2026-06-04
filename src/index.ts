@@ -38,7 +38,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     );
 
     console.log(
-      '@datalayer/jupyter-mcp-tools from YZQ Javascript End!'
+      '@datalayer/jupyter-mcp-tools from YZQ Javascript End! Go workflows!'
     );
 
     // Register MCP Tools commands
