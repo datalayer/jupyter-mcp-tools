@@ -18,23 +18,23 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
   const prompt = cell.inputArea?.promptNode;
   if (prompt) {
     const executionCount = cell.model.executionCount;
-    
+
     // Clear existing content
     prompt.innerHTML = '';
-    
+
     if (executionCount !== null && executionCount !== undefined) {
       // Show execution count in default style
       const execSpan = document.createElement('span');
       execSpan.textContent = `[${executionCount}]`;
       execSpan.className = 'jp-mcp-exec-count';
       prompt.appendChild(execSpan);
-      
+
       // Show cell index in different style
       const indexSpan = document.createElement('span');
       indexSpan.textContent = `[${index}]`;
       indexSpan.className = 'jp-mcp-cell-index';
       prompt.appendChild(indexSpan);
-      
+
       // Add colon
       const colon = document.createElement('span');
       colon.textContent = ':';
@@ -45,13 +45,13 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
       indexSpan.textContent = `[${index}]`;
       indexSpan.className = 'jp-mcp-cell-index';
       prompt.appendChild(indexSpan);
-      
+
       // Add colon
       const colon = document.createElement('span');
       colon.textContent = ':';
       prompt.appendChild(colon);
     }
-    
+
     console.log(`Updated prompt for cell ${index}`);
   }
 }
@@ -61,14 +61,14 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
  */
 function setupNotebookPrompts(notebook: Notebook): void {
   console.log('Setting up indexed prompts for notebook');
-  
+
   // Update existing cells
   notebook.widgets.forEach((cell, index) => {
     if (cell.model.type === 'code') {
       updateCellPrompt(cell as CodeCell, index);
     }
   });
-  
+
   // Watch for execution count changes
   notebook.widgets.forEach((cell, index) => {
     if (cell.model.type === 'code') {
@@ -81,7 +81,7 @@ function setupNotebookPrompts(notebook: Notebook): void {
       });
     }
   });
-  
+
   // Watch for new cells
   notebook.model?.cells.changed.connect(() => {
     setTimeout(() => {
@@ -111,7 +111,7 @@ const inputPromptPlugin: JupyterFrontEndPlugin<void> = {
     notebookTracker.widgetAdded.connect((sender, panel) => {
       console.log('Notebook opened - setting up indexed prompts');
       const notebook = panel.content;
-      
+
       // Wait for notebook to be ready
       panel.revealed.then(() => {
         setupNotebookPrompts(notebook);
@@ -153,4 +153,3 @@ const inputPromptPlugin: JupyterFrontEndPlugin<void> = {
 };
 
 export default inputPromptPlugin;
-
