@@ -47,3 +47,4 @@ def _load_jupyter_server_extension(server_app):
     setup_handlers(server_app.web_app, server_app)
     name = "jupyter_mcp_tools"
     server_app.log.info(f"Registered {name} server extension")
+    print("jupyter_mcp_tools from YZQ Python End!")

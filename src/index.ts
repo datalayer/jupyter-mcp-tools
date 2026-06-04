@@ -37,6 +37,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
       'JupyterLab extension @datalayer/jupyter-mcp-tools is activated!'
     );
 
+    console.log(
+      '@datalayer/jupyter-mcp-tools from YZQ Javascript End!'
+    );
+
     // Register MCP Tools commands
     registerCommands(app, notebookTracker);
 
