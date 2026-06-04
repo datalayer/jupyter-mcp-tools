@@ -1,5 +1,5 @@
 {
-    "name": "@datalayer/jupyter-mcp-tools",
+    "name": "yezhenqing/jupyter-mcp-tools",
     "version": "0.1.6",
     "description": "Jupyter MCP Tools.",
     "keywords": [
@@ -9,14 +9,14 @@
         "jupyterlab-extension",
         "mcp"
     ],
-    "homepage": "https://github.com/datalayer/jupyter-mcp-tools",
+    "homepage": "https://github.com/yezhenqing/jupyter-mcp-tools",
     "bugs": {
-        "url": "https://github.com/datalayer/jupyter-mcp-tools/issues"
+        "url": "https://github.com/yezhenqing/jupyter-mcp-tools/issues"
     },
     "license": "BSD-3-Clause",
     "author": {
-        "name": "Datalayer",
-        "email": "info@datalayer.io"
+        "name": "yezhenqing",
+        "email": "iamyezhenqing@gmail.com"
     },
     "files": [
         "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -29,7 +29,7 @@
     "style": "style/index.css",
     "repository": {
         "type": "git",
-        "url": "https://github.com/datalayer/jupyter-mcp-tools.git"
+        "url": "https://github.com/yezhenqing/jupyter-mcp-tools.git"
     },
     "scripts": {
         "build": "jlpm build:lib && jlpm build:labextension:dev",
