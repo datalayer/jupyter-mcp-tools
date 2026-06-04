@@ -38,7 +38,7 @@ jobs:
     - name: Build the extension
       run: |
         set -eux
-        python -m pip install .[test]
+        python -m pip install --no-build-isolation .[test]
 
         pytest -vv -r ap --cov jupyter_mcp_tools
         jupyter server extension list
