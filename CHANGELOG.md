@@ -2,11 +2,28 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.1.14
+
+([Full Changelog](https://github.com/yezhenqing/jupyter-mcp-tools/compare/v0.1.13...2e064e52849e789fbc39ffa8b876038b8e03c930))
+
+### Bugs fixed
+
+- Update publish-release.yml [#8](https://github.com/yezhenqing/jupyter-mcp-tools/pull/8) ([@yezhenqing](https://github.com/yezhenqing))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/yezhenqing/jupyter-mcp-tools/graphs/contributors?from=2026-06-05&to=2026-06-05&type=c))
+
+@yezhenqing ([activity](https://github.com/search?q=repo%3Ayezhenqing%2Fjupyter-mcp-tools+involves%3Ayezhenqing+updated%3A2026-06-05..2026-06-05&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.1.13
 
 No merged PRs
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.1.12
 
