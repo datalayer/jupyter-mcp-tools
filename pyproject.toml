@@ -3,7 +3,7 @@ requires = ["hatchling>=1.5.0", "jupyterlab>=4.5.8,<5", "hatch-nodejs-version>=0
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyter_mcp_tools"
+name = "yezq_mcp_tools"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
@@ -45,25 +45,25 @@ source = "nodejs"
 fields = ["description", "authors", "urls", "keywords"]
 
 [tool.hatch.build.targets.sdist]
-artifacts = ["jupyter_mcp_tools/labextension"]
+artifacts = ["yezq_mcp_tools/labextension"]
 exclude = [".github", "binder"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"jupyter_mcp_tools/labextension" = "share/jupyter/labextensions/@datalayer/jupyter-mcp-tools"
-"install.json" = "share/jupyter/labextensions/@datalayer/jupyter-mcp-tools/install.json"
+"yezq_mcp_tools/labextension" = "share/jupyter/labextensions/yezq-mcp-tools"
+"install.json" = "share/jupyter/labextensions/yezq-mcp-tools/install.json"
 "jupyter-config/server-config" = "etc/jupyter/jupyter_server_config.d"
 
 [tool.hatch.build.hooks.version]
-path = "jupyter_mcp_tools/_version.py"
+path = "yezq_mcp_tools/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
 dependencies = ["hatch-jupyter-builder>=0.5"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
-    "jupyter_mcp_tools/labextension/static/style.js",
-    "jupyter_mcp_tools/labextension/package.json",
+    "yezq_mcp_tools/labextension/static/style.js",
+    "yezq_mcp_tools/labextension/package.json",
 ]
-skip-if-exists = ["jupyter_mcp_tools/labextension/static/style.js"]
+skip-if-exists = ["yezq_mcp_tools/labextension/static/style.js"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 build_cmd = "build:prod"
@@ -73,14 +73,14 @@ npm = ["jlpm"]
 build_cmd = "install:extension"
 npm = ["jlpm"]
 source_dir = "src"
-build_dir = "jupyter_mcp_tools/labextension"
+build_dir = "yezq_mcp_tools/labextension"
 
 [tool.jupyter-releaser.options]
 version_cmd = "hatch version"
 
 [tool.jupyter-releaser.hooks]
 before-build-npm = [
-    "python -m pip install 'jupyterlab>=4.0.0,<5'",
+    "python -m pip install 'jupyterlab>=4.5.8,<5'",
     "jlpm",
     "jlpm build:prod"
 ]

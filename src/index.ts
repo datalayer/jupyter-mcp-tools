@@ -22,7 +22,7 @@ import inputPromptPlugin from './inputPrompt';
  * Initialization data for the @datalayer/jupyter-mcp-tools extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: '@datalayer/jupyter-mcp-tools:plugin',
+  id: 'yezq-mcp-tools:plugin',
   description: 'Jupyter MCP Tools.',
   autoStart: true,
   optional: [ISettingRegistry],
@@ -34,7 +34,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     settingRegistry: ISettingRegistry | null
   ) => {
     console.log(
-      'JupyterLab extension @datalayer/jupyter-mcp-tools is activated!'
+      'JupyterLab extension yezq-mcp-tools is activated!'
     );
 
     console.log(

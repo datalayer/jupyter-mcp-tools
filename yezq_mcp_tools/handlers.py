@@ -8,15 +8,15 @@ from jupyter_server.utils import url_path_join
 from jupyter_server.base.handlers import JupyterHandler, APIHandler
 from tornado import web
 
-from jupyter_mcp_tools.route import RouteHandler
-from jupyter_mcp_tools.websocket import WsEchoHandler
+from yezq_mcp_tools.route import RouteHandler
+from yezq_mcp_tools.websocket import WsEchoHandler
 
 
 class MCPToolsListHandler(JupyterHandler):
     """
     HTTP handler to list registered MCP tools.
     
-    GET /jupyter-mcp-tools/tools?query=<filter>&enabled_only=<bool>&timeout=<seconds>
+    GET /yezq-mcp-tools/tools?query=<filter>&enabled_only=<bool>&timeout=<seconds>
     """
     
     @web.authenticated
@@ -208,10 +208,10 @@ def setup_handlers(web_app, server_app=None):
     host_pattern = ".*$"
 
     base_url = web_app.settings["base_url"]
-    route_pattern = url_path_join(base_url, "jupyter-mcp-tools", "get-example")
-    ws_pattern = url_path_join(base_url, "jupyter-mcp-tools", "echo")
-    tools_pattern = url_path_join(base_url, "jupyter-mcp-tools", "tools")
-    execute_pattern = url_path_join(base_url, "jupyter-mcp-tools", "execute")
+    route_pattern = url_path_join(base_url, "yezq-mcp-tools", "get-example")
+    ws_pattern = url_path_join(base_url, "yezq-mcp-tools", "echo")
+    tools_pattern = url_path_join(base_url, "yezq-mcp-tools", "tools")
+    execute_pattern = url_path_join(base_url, "yezq-mcp-tools", "execute")
     
     handlers = [
         (route_pattern, RouteHandler),

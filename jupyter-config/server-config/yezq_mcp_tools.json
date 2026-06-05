@@ -1,7 +1,7 @@
 {
   "ServerApp": {
     "jpserver_extensions": {
-      "jupyter_mcp_tools": true
+      "yezq_mcp_tools": true
     }
   }
 }

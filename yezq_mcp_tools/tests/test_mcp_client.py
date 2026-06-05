@@ -10,7 +10,7 @@ This script demonstrates how to interact with the JupyterLab MCP Tools extension
 via WebSocket to list and execute commands.
 
 Usage:
-    python test_mcp_client.py --url ws://localhost:8888/jupyter-mcp-tools/echo
+    python test_mcp_client.py --url ws://localhost:8888/yezq-mcp-tools/echo
 """
 
 import asyncio
@@ -158,8 +158,8 @@ async def main():
     )
     parser.add_argument(
         "--url",
-        default="ws://localhost:8888/jupyter-mcp-tools/echo",
-        help="WebSocket URL (default: ws://localhost:8888/jupyter-mcp-tools/echo)"
+        default="ws://localhost:8888/yezq-mcp-tools/echo",
+        help="WebSocket URL (default: ws://localhost:8888/yezq-mcp-tools/echo)"
     )
     parser.add_argument(
         "--token",

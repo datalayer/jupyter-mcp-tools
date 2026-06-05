@@ -14,5 +14,5 @@ class RouteHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
         self.finish(json.dumps({
-            "data": "This is /jupyter-mcp-tools/get-example endpoint!"
+            "data": "This is /yezq-mcp-tools/get-example endpoint!"
         }))

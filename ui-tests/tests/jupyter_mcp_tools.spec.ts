@@ -18,7 +18,7 @@ test('should emit an activation console message', async ({ page }) => {
   expect(
     logs.filter(
       s =>
-        s === 'JupyterLab extension @datalayer/jupyter-mcp-tools is activated!'
+        s === 'JupyterLab extension yezq-mcp-tools is activated!'
     )
   ).toHaveLength(1);
 });

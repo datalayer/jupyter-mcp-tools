@@ -9,7 +9,7 @@ This script tests:
 """
 
 import asyncio
-from jupyter_mcp_tools.client import get_tools
+from yezq_mcp_tools.client import get_tools
 
 
 async def test_get_tools():
@@ -59,7 +59,7 @@ async def test_get_tools():
     print("\nTest 3: Query with 1s timeout (may fail if not yet registered)")
     try:
         # Reset the registration event to test timeout
-        from jupyter_mcp_tools.websocket import WsEchoHandler
+        from yezq_mcp_tools.websocket import WsEchoHandler
         
         # Note: This test only makes sense if run before tools are registered
         if WsEchoHandler.are_tools_registered():

@@ -26,13 +26,13 @@ __all__ = [
 def _jupyter_labextension_paths():
     return [{
         "src": "labextension",
-        "dest": "@datalayer/jupyter-mcp-tools"
+        "dest": "yezq-mcp-tools"
     }]
 
 
 def _jupyter_server_extension_points():
     return [{
-        "module": "jupyter_mcp_tools"
+        "module": "yezq_mcp_tools"
     }]
 
 
@@ -45,6 +45,6 @@ def _load_jupyter_server_extension(server_app):
         JupyterLab application instance
     """
     setup_handlers(server_app.web_app, server_app)
-    name = "jupyter_mcp_tools"
+    name = "yezq_mcp_tools"
     server_app.log.info(f"Registered {name} server extension")
-    print("jupyter_mcp_tools from YZQ Python End!")
+    print("yezq_mcp_tools from YZQ Python End!")

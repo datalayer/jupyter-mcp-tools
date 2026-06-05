@@ -40,12 +40,12 @@ jobs:
         set -eux
         python -m pip install .[test]
 
-        pytest -vv -r ap --cov jupyter_mcp_tools
+        pytest -vv -r ap --cov yezq_mcp_tools
         jupyter server extension list
-        jupyter server extension list 2>&1 | grep -ie "jupyter_mcp_tools.*OK"
+        jupyter server extension list 2>&1 | grep -ie "yezq_mcp_tools.*OK"
 
         jupyter labextension list
-        jupyter labextension list 2>&1 | grep -ie "@datalayer/jupyter-mcp-tools.*OK"
+        jupyter labextension list 2>&1 | grep -ie "@datalayer/yezq-mcp-tools.*OK"
         python -m jupyterlab.browser_check
 
     - name: Package the extension
@@ -54,13 +54,13 @@ jobs:
 
         pip install build
         python -m build
-        pip uninstall -y "jupyter_mcp_tools" jupyterlab
+        pip uninstall -y "yezq_mcp_tools" jupyterlab
 
     - name: Upload extension packages
       uses: actions/upload-artifact@v4
       with:
         name: extension-artifacts
-        path: dist/jupyter_mcp_tools*
+        path: dist/yezq_mcp_tools*
         if-no-files-found: error
 
   test_isolated:
@@ -83,14 +83,14 @@ jobs:
         sudo rm -rf $(which node)
         sudo rm -rf $(which node)
 
-        pip install "jupyterlab>=4.5.8,<5" jupyter_mcp_tools*.whl
+        pip install "jupyterlab>=4.5.8,<5" yezq_mcp_tools*.whl
 
 
         jupyter server extension list
-        jupyter server extension list 2>&1 | grep -ie "jupyter_mcp_tools.*OK"
+        jupyter server extension list 2>&1 | grep -ie "yezq_mcp_tools.*OK"
 
         jupyter labextension list
-        jupyter labextension list 2>&1 | grep -ie "@datalayer/jupyter-mcp-tools.*OK"
+        jupyter labextension list 2>&1 | grep -ie "yezq-mcp-tools.*OK"
         python -m jupyterlab.browser_check --no-browser-test
 
   integration-tests:
@@ -148,7 +148,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: jupyter_mcp_tools-playwright-tests
+        name: yezq_mcp_tools-playwright-tests
         path: |
           ui-tests/test-results
           ui-tests/playwright-report

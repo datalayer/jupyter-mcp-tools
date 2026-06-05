@@ -3,7 +3,7 @@
 # BSD 3-Clause License
 
 """
-Python client for jupyter-mcp-tools extension.
+Python client for yezq-mcp-tools extension.
 
 This client provides programmatic access to the JupyterLab commands
 registered as MCP tools.
@@ -22,10 +22,10 @@ logger = logging.getLogger(__name__)
 
 class MCPToolsClient:
     """
-    Client for interacting with the jupyter-mcp-tools extension.
+    Client for interacting with the yezq-mcp-tools extension.
     
     This client connects to a running JupyterLab instance with the
-    jupyter-mcp-tools extension installed and queries the available tools.
+    yezq-mcp-tools extension installed and queries the available tools.
     """
     
     def __init__(
@@ -123,7 +123,7 @@ class MCPToolsClient:
         # We need to query through the WebSocket or add an HTTP endpoint
         # For now, we'll add an HTTP endpoint to the extension
         
-        url = urljoin(self.base_url + '/', 'jupyter-mcp-tools/tools')
+        url = urljoin(self.base_url + '/', 'yezq-mcp-tools/tools')
         params = {
             'timeout': str(wait_timeout)
         }
@@ -152,7 +152,7 @@ class MCPToolsClient:
                     )
                     return []
         except aiohttp.ClientError as e:
-            logger.error(f"Error connecting to jupyter-mcp-tools extension: {e}")
+            logger.error(f"Error connecting to yezq-mcp-tools extension: {e}")
             return []
         except Exception as e:
             logger.error(f"Unexpected error getting tools: {e}")
@@ -195,7 +195,7 @@ class MCPToolsClient:
         if not self._session:
             await self.connect()
         
-        url = urljoin(self.base_url + '/', 'jupyter-mcp-tools/execute')
+        url = urljoin(self.base_url + '/', 'yezq-mcp-tools/execute')
         payload = {
             'tool_id': tool_id,
             'parameters': parameters or {}
@@ -212,7 +212,7 @@ class MCPToolsClient:
                         f"Failed to execute tool: HTTP {response.status} - {error_text}"
                     )
         except aiohttp.ClientError as e:
-            raise ValueError(f"Error connecting to jupyter-mcp-tools extension: {e}")
+            raise ValueError(f"Error connecting to yezq-mcp-tools extension: {e}")
         except Exception as e:
             raise ValueError(f"Unexpected error executing tool: {e}")
 
