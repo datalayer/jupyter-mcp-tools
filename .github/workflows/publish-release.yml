@@ -29,8 +29,6 @@ jobs:
 
       - name: Populate Release
         id: populate-release
-        env:
-          TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
         uses: jupyter-server/jupyter_releaser/.github/actions/populate-release@v2
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -40,10 +38,11 @@ jobs:
 
       - name: Finalize Release
         id: finalize-release
+        uses: yezhenqing/jupyter_releaser/.github/actions/finalize-release@main
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PYPI_TOKEN_URL: "https://test.pypi.org/_/oidc/github/mint-token"
           TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
-        uses: jupyter-server/jupyter_releaser/.github/actions/finalize-release@v2
         with:
           token: ${{ steps.app-token.outputs.token }}
           release_url: ${{ steps.populate-release.outputs.release_url }}
