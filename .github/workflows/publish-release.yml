@@ -29,6 +29,9 @@ jobs:
 
       - name: Populate Release
         id: populate-release
+        env:
+          TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+          PYPI_TOKEN_URL: https://test.pypi.org/_/oidc/github/mint-token
         uses: jupyter-server/jupyter_releaser/.github/actions/populate-release@v2
         with:
           token: ${{ steps.app-token.outputs.token }}
