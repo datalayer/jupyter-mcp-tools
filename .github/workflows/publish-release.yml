@@ -31,7 +31,6 @@ jobs:
         id: populate-release
         uses: yezhenqing/jupyter_releaser/.github/actions/populate-release@main
         with:
-          PYPI_TOKEN_URL: "https://test.pypi.org/_/oidc/github/mint-token"
           token: ${{ steps.app-token.outputs.token }}
           branch: ${{ github.event.inputs.branch }}
           release_url: ${{ github.event.inputs.release_url }}
@@ -42,8 +41,10 @@ jobs:
         uses: yezhenqing/jupyter_releaser/.github/actions/finalize-release@main
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          PYPI_TOKEN_URL: "https://test.pypi.org/_/oidc/github/mint-token"
           TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
         with:
           token: ${{ steps.app-token.outputs.token }}
           release_url: ${{ steps.populate-release.outputs.release_url }}
