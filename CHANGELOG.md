@@ -2,6 +2,12 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.1.13
+
+No merged PRs
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.1.12
 
 ([Full Changelog](https://github.com/yezhenqing/jupyter-mcp-tools/compare/v0.1.11...ef3f42253e23ffb08012a73b1a43aa8cc98998af))
@@ -18,8 +24,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/yezhenqing/jupyter-mcp-tools/graphs/contributors?from=2026-06-05&to=2026-06-05&type=c))
 
 @yezhenqing ([activity](https://github.com/search?q=repo%3Ayezhenqing%2Fjupyter-mcp-tools+involves%3Ayezhenqing+updated%3A2026-06-05..2026-06-05&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.1.11
 
