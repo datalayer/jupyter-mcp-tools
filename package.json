@@ -1,6 +1,6 @@
 {
     "name": "@datalayer/jupyter-mcp-tools",
-    "version": "0.1.14",
+    "version": "0.1.15",
     "description": "Jupyter MCP Tools.",
     "keywords": [
         "ai",
