@@ -8,6 +8,8 @@
 
 [![Become a Sponsor](https://img.shields.io/static/v1?label=Become%20a%20Sponsor&message=%E2%9D%A4&logo=GitHub&style=flat&color=1ABC9C)](https://github.com/sponsors/datalayer)
 
+> This repository is now ARCHIVED and actively developed in https://github.com/datalayer/jupyter-mcp-server.
+
 # 🪐✨ Jupyter MCP Tools
 
 [![PyPI - Version](https://img.shields.io/pypi/v/jupyter-mcp-tools)](https://pypi.org/project/jupyter-mcp-tools)
