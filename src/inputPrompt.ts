@@ -15,6 +15,8 @@ import { CodeCell } from '@jupyterlab/cells';
  * Update a code cell's input prompt to show the cell index
  */
 function updateCellPrompt(cell: CodeCell, index: number): void {
+  /*
+  // TODO Disabled for now, revisit...
   const prompt = cell.inputArea?.promptNode;
   if (prompt) {
     const executionCount = cell.model.executionCount;
@@ -54,6 +56,7 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
     
     console.log(`Updated prompt for cell ${index}`);
   }
+  */
 }
 
 /**
