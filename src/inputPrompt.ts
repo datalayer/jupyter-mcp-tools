@@ -7,14 +7,26 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { INotebookTracker, Notebook } from '@jupyterlab/notebook';
 import { CodeCell } from '@jupyterlab/cells';
+
+const SETTINGS_PLUGIN_ID = '@datalayer/jupyter-mcp-tools:plugin';
+const SHOW_CELL_INDEXES_SETTING = 'showCellIndexes';
 
 function deferUntilAfterRender(callback: () => void): void {
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(callback);
   });
+}
+
+function resetCellPrompt(cell: CodeCell): void {
+  const prompt =
+    cell.model.executionState === 'running'
+      ? '*'
+      : `${cell.model.executionCount || ''}`;
+  cell.inputArea?.setPrompt(prompt);
 }
 
 /**
@@ -65,7 +77,10 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
 /**
  * Setup prompt updates for all cells in a notebook
  */
-function setupNotebookPrompts(notebook: Notebook): void {
+function setupNotebookPrompts(
+  notebook: Notebook,
+  showCellIndexes: () => boolean
+): () => void {
   console.log('Setting up indexed prompts for notebook');
 
   const cellListeners = new WeakMap<CodeCell, () => void>();
@@ -74,7 +89,11 @@ function setupNotebookPrompts(notebook: Notebook): void {
     deferUntilAfterRender(() => {
       const currentIndex = notebook.widgets.indexOf(codeCell);
       if (currentIndex !== -1) {
-        updateCellPrompt(codeCell, currentIndex);
+        if (showCellIndexes()) {
+          updateCellPrompt(codeCell, currentIndex);
+        } else {
+          resetCellPrompt(codeCell);
+        }
       }
     });
   };
@@ -105,7 +124,11 @@ function setupNotebookPrompts(notebook: Notebook): void {
 
         const codeCell = cell as CodeCell;
         trackCodeCell(codeCell);
-        updateCellPrompt(codeCell, index);
+        if (showCellIndexes()) {
+          updateCellPrompt(codeCell, index);
+        } else {
+          resetCellPrompt(codeCell);
+        }
       });
     });
   };
@@ -116,6 +139,8 @@ function setupNotebookPrompts(notebook: Notebook): void {
   notebook.model?.cells.changed.connect(() => {
     refreshNotebookPrompts();
   });
+
+  return refreshNotebookPrompts;
 }
 
 /**
@@ -126,25 +151,77 @@ const inputPromptPlugin: JupyterFrontEndPlugin<void> = {
   description: 'Custom input prompt that shows cell index.',
   autoStart: true,
   requires: [INotebookTracker],
-  activate: (app: JupyterFrontEnd, notebookTracker: INotebookTracker) => {
+  optional: [ISettingRegistry],
+  activate: (
+    app: JupyterFrontEnd,
+    notebookTracker: INotebookTracker,
+    settingRegistry: ISettingRegistry | null
+  ) => {
     console.log(
       'JupyterLab extension @datalayer/jupyter-mcp-tools:input-prompt is activated!'
     );
+
+    let showCellIndexes = false;
+    const notebooks = new Set<Notebook>();
+    const notebookRefreshers = new WeakMap<Notebook, () => void>();
+
+    const refreshAllNotebooks = () => {
+      notebooks.forEach(notebook => {
+        notebookRefreshers.get(notebook)?.();
+      });
+    };
+
+    const initializeNotebook = (notebook: Notebook) => {
+      if (notebookRefreshers.has(notebook)) {
+        notebookRefreshers.get(notebook)?.();
+        return;
+      }
+
+      notebooks.add(notebook);
+      notebookRefreshers.set(
+        notebook,
+        setupNotebookPrompts(notebook, () => showCellIndexes)
+      );
+      notebook.disposed.connect(() => {
+        notebooks.delete(notebook);
+      });
+    };
+
+    if (settingRegistry) {
+      settingRegistry
+        .load(SETTINGS_PLUGIN_ID)
+        .then(settings => {
+          const syncSettings = () => {
+            showCellIndexes =
+              settings.get(SHOW_CELL_INDEXES_SETTING).composite === true;
+            refreshAllNotebooks();
+          };
+
+          settings.changed.connect(syncSettings);
+          syncSettings();
+        })
+        .catch(reason => {
+          console.error(
+            'Failed to load input prompt settings for @datalayer/jupyter-mcp-tools.',
+            reason
+          );
+        });
+    }
 
     // Setup prompts for new notebooks
     notebookTracker.widgetAdded.connect((sender, panel) => {
       console.log('Notebook opened - setting up indexed prompts');
       const notebook = panel.content;
-      
+
       // Wait for notebook to be ready
       panel.revealed.then(() => {
-        setupNotebookPrompts(notebook);
+        initializeNotebook(notebook);
       });
     });
 
     // Setup prompts for currently open notebooks
     notebookTracker.forEach(panel => {
-      setupNotebookPrompts(panel.content);
+      initializeNotebook(panel.content);
     });
 
     // Register custom CSS for the indexed input prompt
