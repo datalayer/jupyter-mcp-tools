@@ -209,7 +209,13 @@ console.log(`Cell ${cellInfo.cellIndex}: ${cellInfo.source}`);
 
 ## Visual Cell Indexing
 
-Installing this extension enhances your JupyterLab experience by displaying cell indices to the left of each cell in **orange italics**. The goal is to provide a clear and consistent way to reference cells, especially useful when interacting with AI agents through MCP with the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server). The tools of the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server) identify the cells by their index, so having these indices visible helps you when instructing the AI to interact with specific cells.
+This extension can display cell indices to the left of each code cell in **orange italics**. The goal is to provide a clear and consistent way to reference cells, especially useful when interacting with AI agents through MCP with the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server). The tools of the [jupyter-mcp-server](https://github.com/datalayer/jupyter-mcp-server) identify the cells by their index, so having these indices visible helps you when instructing the AI to interact with specific cells.
+
+This feature is disabled by default. To enable it in JupyterLab:
+
+1. Open **Settings > Settings Editor**.
+2. Search for `jupyter-mcp-tools` or open the `@datalayer/jupyter-mcp-tools` section.
+3. Enable the **Show cell indexes** setting.
 
 ![Cell Indices](https://images.datalayer.io/products/jupyter-mcp-tools/cell-indices.png)
 
