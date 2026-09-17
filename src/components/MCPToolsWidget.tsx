@@ -149,7 +149,7 @@ export class MCPToolsWidget extends ReactWidget {
   /**
    * Render the React component
    */
-  protected render(): React.ReactElement {
+  protected render(): JSX.Element {
     console.log(
       `MCPToolsWidget.render() called with ${this._tools.length} tools and ${this._messages.length} messages`
     );
