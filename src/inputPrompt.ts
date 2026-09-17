@@ -11,32 +11,36 @@ import {
 import { INotebookTracker, Notebook } from '@jupyterlab/notebook';
 import { CodeCell } from '@jupyterlab/cells';
 
+function deferUntilAfterRender(callback: () => void): void {
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(callback);
+  });
+}
+
 /**
  * Update a code cell's input prompt to show the cell index
  */
 function updateCellPrompt(cell: CodeCell, index: number): void {
-  /*
-  // TODO Disabled for now, revisit...
   const prompt = cell.inputArea?.promptNode;
   if (prompt) {
     const executionCount = cell.model.executionCount;
-    
+
     // Clear existing content
-    prompt.innerHTML = '';
-    
+    prompt.replaceChildren();
+
     if (executionCount !== null && executionCount !== undefined) {
       // Show execution count in default style
       const execSpan = document.createElement('span');
       execSpan.textContent = `[${executionCount}]`;
       execSpan.className = 'jp-mcp-exec-count';
       prompt.appendChild(execSpan);
-      
+
       // Show cell index in different style
       const indexSpan = document.createElement('span');
       indexSpan.textContent = `[${index}]`;
       indexSpan.className = 'jp-mcp-cell-index';
       prompt.appendChild(indexSpan);
-      
+
       // Add colon
       const colon = document.createElement('span');
       colon.textContent = ':';
@@ -47,16 +51,15 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
       indexSpan.textContent = `[${index}]`;
       indexSpan.className = 'jp-mcp-cell-index';
       prompt.appendChild(indexSpan);
-      
+
       // Add colon
       const colon = document.createElement('span');
       colon.textContent = ':';
       prompt.appendChild(colon);
     }
-    
+
     console.log(`Updated prompt for cell ${index}`);
   }
-  */
 }
 
 /**
@@ -64,36 +67,54 @@ function updateCellPrompt(cell: CodeCell, index: number): void {
  */
 function setupNotebookPrompts(notebook: Notebook): void {
   console.log('Setting up indexed prompts for notebook');
-  
-  // Update existing cells
-  notebook.widgets.forEach((cell, index) => {
-    if (cell.model.type === 'code') {
-      updateCellPrompt(cell as CodeCell, index);
+
+  const cellListeners = new WeakMap<CodeCell, () => void>();
+
+  const scheduleCellPromptUpdate = (codeCell: CodeCell) => {
+    deferUntilAfterRender(() => {
+      const currentIndex = notebook.widgets.indexOf(codeCell);
+      if (currentIndex !== -1) {
+        updateCellPrompt(codeCell, currentIndex);
+      }
+    });
+  };
+
+  const trackCodeCell = (codeCell: CodeCell) => {
+    if (cellListeners.has(codeCell)) {
+      return;
     }
-  });
-  
-  // Watch for execution count changes
-  notebook.widgets.forEach((cell, index) => {
-    if (cell.model.type === 'code') {
-      const codeCell = cell as CodeCell;
-      codeCell.model.stateChanged.connect(() => {
-        const currentIndex = notebook.widgets.indexOf(cell);
-        if (currentIndex !== -1) {
-          updateCellPrompt(codeCell, currentIndex);
-        }
-      });
-    }
-  });
-  
-  // Watch for new cells
-  notebook.model?.cells.changed.connect(() => {
-    setTimeout(() => {
+
+    const refreshPrompt = () => {
+      scheduleCellPromptUpdate(codeCell);
+    };
+
+    cellListeners.set(codeCell, refreshPrompt);
+    codeCell.model.stateChanged.connect(refreshPrompt);
+    codeCell.disposed.connect(() => {
+      codeCell.model.stateChanged.disconnect(refreshPrompt);
+      cellListeners.delete(codeCell);
+    });
+  };
+
+  const refreshNotebookPrompts = () => {
+    deferUntilAfterRender(() => {
       notebook.widgets.forEach((cell, index) => {
-        if (cell.model.type === 'code') {
-          updateCellPrompt(cell as CodeCell, index);
+        if (cell.model.type !== 'code') {
+          return;
         }
+
+        const codeCell = cell as CodeCell;
+        trackCodeCell(codeCell);
+        updateCellPrompt(codeCell, index);
       });
-    }, 100);
+    });
+  };
+
+  refreshNotebookPrompts();
+
+  // Watch for new, removed, or reordered cells.
+  notebook.model?.cells.changed.connect(() => {
+    refreshNotebookPrompts();
   });
 }
 
