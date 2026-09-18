@@ -1,5 +1,10 @@
 [build-system]
-requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2"]
+requires = [
+    "hatchling>=1.17,<1.32.1",
+    "hatch-jupyter-builder>=0.9.1",
+    "jupyterlab>=4.0.0,<5",
+    "hatch-nodejs-version>=0.3.2",
+]
 build-backend = "hatchling.build"
 
 [project]
@@ -24,7 +29,8 @@ classifiers = [
 ]
 dependencies = [
     "jupyter_server>=2.4.0,<3",
-    "aiohttp>=3.8.0"
+    "aiohttp>=3.8.0",
+    "requests"
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
@@ -34,7 +40,8 @@ test = [
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
-    "pytest-jupyter[server]>=0.6.0"
+    "pytest-jupyter[server]>=0.6.0",
+    "websockets"
 ]
 
 [tool.hatch.version]
@@ -56,7 +63,7 @@ exclude = [".github", "binder"]
 path = "jupyter_mcp_tools/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
-dependencies = ["hatch-jupyter-builder>=0.5"]
+dependencies = ["hatch-jupyter-builder>=0.9.1"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
     "jupyter_mcp_tools/labextension/static/style.js",

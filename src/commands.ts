@@ -109,7 +109,7 @@ export function registerCommands(
     execute: () => {
       // Get the current notebook panel
       const current = notebookTracker.currentWidget;
-      
+
       if (!current) {
         console.warn('No active notebook');
         return {
@@ -137,17 +137,19 @@ export function registerCommands(
         cellIndex: cellIndex,
         source: activeCell.model.sharedModel.getSource(),
         metadata: activeCell.model.metadata,
-        executionCount: activeCell.model.type === 'code' 
-          ? (activeCell.model as any).executionCount 
-          : null
+        executionCount:
+          activeCell.model.type === 'code'
+            ? (activeCell.model as any).executionCount
+            : null
       };
 
       console.log('Selected cell information:', cellInfo);
-      
-      const message = `Cell ${cellIndex + 1} (${cellInfo.cellType}): ${
-        cellInfo.source.substring(0, 50)
-      }${cellInfo.source.length > 50 ? '...' : ''}`;
-      
+
+      const message = `Cell ${cellIndex + 1} (${cellInfo.cellType}): ${cellInfo.source.substring(
+        0,
+        50
+      )}${cellInfo.source.length > 50 ? '...' : ''}`;
+
       console.log(message);
 
       return cellInfo;
