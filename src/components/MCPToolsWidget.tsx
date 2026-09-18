@@ -48,11 +48,9 @@ export class MCPToolsWidget extends ReactWidget {
   private _tools: ITool[] = [];
   private _messages: IMessageLog[] = [];
   private _executeCallbackLocal:
-    | ((toolId: string, parameters: any) => void)
-    | null = null;
+    ((toolId: string, parameters: any) => void) | null = null;
   private _executeCallbackRemote:
-    | ((toolId: string, parameters: any) => void)
-    | null = null;
+    ((toolId: string, parameters: any) => void) | null = null;
 
   constructor() {
     super();

@@ -2,8 +2,8 @@
  * Copyright (c) 2023-2025 Datalayer, Inc.
  * Distributed under the terms of the Modified BSD License.
  */
- 
- /* MCP Tools Panel Styles */
+
+/* MCP Tools Panel Styles */
 
 .jp-MCPToolsWidget {
   display: flex;
@@ -65,7 +65,7 @@
 .mcp-panel-tabs {
   display: flex;
   gap: 4px;
-  padding: 8px 12px 0 12px;
+  padding: 8px 12px 0;
   border-bottom: 2px solid var(--jp-border-color2);
   background: var(--jp-layout-color1);
   flex-shrink: 0;
@@ -95,11 +95,11 @@
 
 .mcp-tab-active {
   color: var(--jp-brand-color1);
-  border-bottom-color: var(--jp-layout-color0);
   font-weight: 600;
   background: var(--jp-layout-color0);
   border-color: var(--jp-border-color2);
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom-color: var(--jp-layout-color0);
+  box-shadow: 0 -2px 4px rgb(0 0 0 / 10%);
 }
 
 /* Panel content area - fills remaining space */
@@ -113,7 +113,7 @@
 
 /* Search Box */
 .mcp-search-box {
-  padding: 12px 12px 8px 12px;
+  padding: 12px 12px 8px;
   border-bottom: 1px solid var(--jp-border-color2);
   background: var(--jp-layout-color1);
   flex-shrink: 0; /* Don't shrink when space is tight */
@@ -165,8 +165,7 @@
 /* Tools list - scrollable container */
 .mcp-tools-list {
   flex: 1 1 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding: 12px;
   min-height: 0; /* Critical for flex children with overflow */
 }
@@ -183,7 +182,7 @@
 
 .mcp-tool-item:hover {
   border-color: var(--jp-brand-color1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 15%);
   transform: translateY(-1px);
 }
 
@@ -364,11 +363,11 @@
 }
 
 /* Messages List */
+
 /* Message list - scrollable */
 .mcp-messages-list {
   flex: 1 1 auto;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding: 12px;
   min-height: 0; /* Critical for flex children with overflow */
   height: 100%; /* Ensure it takes available height */
@@ -468,7 +467,7 @@
   font-family: var(--jp-code-font-family);
   color: var(--jp-ui-font-color1);
   white-space: pre-wrap;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Empty State */

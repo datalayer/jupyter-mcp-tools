@@ -254,4 +254,3 @@ const inputPromptPlugin: JupyterFrontEndPlugin<void> = {
 };
 
 export default inputPromptPlugin;
-
