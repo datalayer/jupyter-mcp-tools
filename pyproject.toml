@@ -29,7 +29,8 @@ classifiers = [
 ]
 dependencies = [
     "jupyter_server>=2.4.0,<3",
-    "aiohttp>=3.8.0"
+    "aiohttp>=3.8.0",
+    "requests"
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
@@ -39,7 +40,8 @@ test = [
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
-    "pytest-jupyter[server]>=0.6.0"
+    "pytest-jupyter[server]>=0.6.0",
+    "websockets"
 ]
 
 [tool.hatch.version]
